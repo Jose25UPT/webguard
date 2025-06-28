@@ -170,32 +170,50 @@ class LiveAnalysisService:
         critical_count = 0
         
         for tool, result in basic_scan.items():
-            if isinstance(result, dict) and 'vulnerabilities' in str(result):
-                # Procesar vulnerabilidades encontradas
+            if isinstance(result, dict):
                 try:
-                    if tool == 'wapiti':
-                        # Procesar JSON de Wapiti si está disponible
-                        if result.get('output_file'):
-                            with open(result['output_file'], 'r') as f:
-                                wapiti_data = json.load(f)
-                                vulns = wapiti_data.get('vulnerabilities', {})
-                                for category, vuln_list in vulns.items():
-                                    if isinstance(vuln_list, list):
-                                        vuln_count += len(vuln_list)
-                                        for vuln in vuln_list:
-                                            if vuln.get('level', 0) >= 3:
-                                                critical_count += 1
+                    # Procesar resultados específicos por herramienta
+                    if tool == 'wapiti' and result.get('json_file'):
+                        wapiti_stats = await self._process_wapiti_json_for_live(result['json_file'])
+                        vuln_count += wapiti_stats['total_vulnerabilities']
+                        critical_count += wapiti_stats['critical_vulnerabilities']
+                        
+                        # Añadir recomendaciones específicas de Wapiti
+                        if wapiti_stats['sql_injection_found']:
+                            progress.recommendations.append("🚨 CRÍTICO: Inyección SQL detectada por Wapiti")
+                        if wapiti_stats['xss_found']:
+                            progress.recommendations.append("⚠️ Vulnerabilidades XSS encontradas")
+                            
+                    elif tool == 'nikto' and result.get('json_file'):
+                        nikto_stats = await self._process_nikto_json_for_live(result['json_file'])
+                        vuln_count += nikto_stats['total_vulnerabilities']
+                        critical_count += nikto_stats['critical_vulnerabilities']
+                        
+                        # Añadir recomendaciones específicas de Nikto
+                        if nikto_stats['admin_directories_found']:
+                            progress.recommendations.append("📁 Directorios administrativos expuestos")
+                        if nikto_stats['config_files_found']:
+                            progress.recommendations.append("⚠️ Archivos de configuración accesibles")
+                    
+                    # Procesar estadísticas generales de la herramienta
+                    elif 'statistics' in result:
+                        stats = result['statistics']
+                        vuln_count += stats.get('total_vulnerabilities', 0)
+                        critical_count += stats.get('by_severity', {}).get('High', 0)
+                        
                 except Exception as e:
-                    logger.error(f"Error procesando {tool}: {e}")
+                    logger.error(f"Error procesando resultados de {tool}: {e}")
         
         progress.vulnerabilities_found += vuln_count
         progress.critical_issues += critical_count
         
-        # Añadir recomendaciones tempranas
+        # Añadir recomendaciones generales si hay vulnerabilidades
         if vuln_count > 0:
-            progress.recommendations.append(f"🔴 Se encontraron {vuln_count} vulnerabilidades con {tool.upper()}")
+            progress.recommendations.append(f"🔍 Total: {vuln_count} vulnerabilidades detectadas")
         if critical_count > 0:
-            progress.recommendations.append(f"⚠️ {critical_count} vulnerabilidades críticas requieren atención inmediata")
+            progress.recommendations.append(f"🚨 URGENTE: {critical_count} vulnerabilidades críticas requieren atención inmediata")
+        if vuln_count == 0:
+            progress.recommendations.append("✅ No se detectaron vulnerabilidades en el escaneo básico")
     
     async def _process_security_apis_results(self, scan_id: str, security_apis: Dict):
         """Procesar resultados de APIs de seguridad"""
@@ -310,6 +328,107 @@ class LiveAnalysisService:
     def get_active_scans(self) -> List[ScanProgress]:
         """Obtener todos los escaneos activos"""
         return list(self.active_scans.values())
+    
+    async def _process_wapiti_json_for_live(self, json_file_path: str) -> Dict:
+        """Procesar archivo JSON de Wapiti para análisis en vivo"""
+        try:
+            with open(json_file_path, 'r', encoding='utf-8') as f:
+                wapiti_data = json.load(f)
+            
+            stats = {
+                'total_vulnerabilities': 0,
+                'critical_vulnerabilities': 0,
+                'sql_injection_found': False,
+                'xss_found': False,
+                'categories': {}
+            }
+            
+            # Procesar vulnerabilidades
+            vulnerabilities = wapiti_data.get('vulnerabilities', {})
+            for category, vulns in vulnerabilities.items():
+                if isinstance(vulns, list) and vulns:
+                    stats['categories'][category] = len(vulns)
+                    stats['total_vulnerabilities'] += len(vulns)
+                    
+                    # Detectar tipos específicos
+                    if 'sql' in category.lower() or 'injection' in category.lower():
+                        stats['sql_injection_found'] = True
+                    if 'xss' in category.lower() or 'cross site scripting' in category.lower():
+                        stats['xss_found'] = True
+                    
+                    # Contar vulnerabilidades críticas (nivel 3+)
+                    for vuln in vulns:
+                        if vuln.get('level', 0) >= 3:
+                            stats['critical_vulnerabilities'] += 1
+            
+            logger.info(f"Wapiti procesado: {stats['total_vulnerabilities']} vulnerabilidades, {stats['critical_vulnerabilities']} críticas")
+            return stats
+            
+        except Exception as e:
+            logger.error(f"Error procesando JSON de Wapiti {json_file_path}: {e}")
+            return {
+                'total_vulnerabilities': 0,
+                'critical_vulnerabilities': 0,
+                'sql_injection_found': False,
+                'xss_found': False,
+                'categories': {}
+            }
+    
+    async def _process_nikto_json_for_live(self, json_file_path: str) -> Dict:
+        """Procesar archivo JSON de Nikto para análisis en vivo"""
+        try:
+            with open(json_file_path, 'r', encoding='utf-8') as f:
+                content = f.read()
+                # Nikto puede generar múltiples líneas JSON
+                json_lines = [line for line in content.strip().split('\n') if line.strip()]
+                if json_lines:
+                    nikto_data = json.loads(json_lines[-1])  # Tomar el último
+                else:
+                    raise ValueError("No se encontraron datos JSON válidos")
+            
+            stats = {
+                'total_vulnerabilities': 0,
+                'critical_vulnerabilities': 0,
+                'admin_directories_found': False,
+                'config_files_found': False,
+                'categories': {}
+            }
+            
+            # Procesar vulnerabilidades
+            vulnerabilities = nikto_data.get('vulnerabilities', [])
+            if vulnerabilities:
+                stats['total_vulnerabilities'] = len(vulnerabilities)
+                
+                for vuln in vulnerabilities:
+                    msg = vuln.get('msg', '').lower()
+                    vuln_id = vuln.get('id', '')
+                    
+                    # Detectar tipos específicos
+                    if 'admin' in msg or 'administrative' in msg:
+                        stats['admin_directories_found'] = True
+                    if 'config' in msg or 'configuration' in msg or '.conf' in msg:
+                        stats['config_files_found'] = True
+                    
+                    # Clasificar severidad
+                    if any(keyword in msg for keyword in ['vulnerable', 'exploit', 'shell', 'injection']):
+                        stats['critical_vulnerabilities'] += 1
+                    
+                    # Categorizar por tipo
+                    category = vuln_id.split('-')[0] if vuln_id else 'general'
+                    stats['categories'][category] = stats['categories'].get(category, 0) + 1
+            
+            logger.info(f"Nikto procesado: {stats['total_vulnerabilities']} vulnerabilidades, {stats['critical_vulnerabilities']} críticas")
+            return stats
+            
+        except Exception as e:
+            logger.error(f"Error procesando JSON de Nikto {json_file_path}: {e}")
+            return {
+                'total_vulnerabilities': 0,
+                'critical_vulnerabilities': 0,
+                'admin_directories_found': False,
+                'config_files_found': False,
+                'categories': {}
+            }
     
     def remove_completed_scan(self, scan_id: str):
         """Remover escaneo completado del cache"""

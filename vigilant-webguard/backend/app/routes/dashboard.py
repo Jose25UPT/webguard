@@ -3,6 +3,7 @@ from fastapi.responses import JSONResponse
 from app.services.security_apis import SecurityAPIsService
 from app.services.realtime_monitor import realtime_monitor
 import asyncio
+import os
 from typing import Dict, List
 
 router = APIRouter()
@@ -52,48 +53,62 @@ async def get_geographic_attacks():
 
 @router.get("/threat-intelligence")
 async def get_threat_intelligence():
-    """Obtener inteligencia de amenazas actualizada"""
+    """Obtener inteligencia de amenazas basada en datos reales"""
     try:
-        # Simular feeds de threat intelligence
-        threat_intel = {
-            'active_campaigns': [
-                {
-                    'name': 'APT29 Phishing Campaign',
-                    'severity': 'HIGH',
-                    'targets': ['Government', 'Healthcare'],
-                    'ttps': ['T1566.001', 'T1059.001'],
-                    'iocs': [
-                        '192.168.1.100',
-                        'malicious-domain.com',
-                        'sha256:abc123...'
-                    ]
-                },
-                {
-                    'name': 'Ransomware-as-a-Service',
-                    'severity': 'CRITICAL',
-                    'targets': ['Financial', 'Retail'],
-                    'ttps': ['T1486', 'T1027'],
-                    'iocs': [
-                        '10.0.0.50',
-                        'ransom-payment.onion'
-                    ]
-                }
-            ],
-            'trending_malware': [
-                'Emotet',
-                'TrickBot',
-                'Cobalt Strike',
-                'Qakbot'
-            ],
-            'vulnerability_alerts': [
-                {
-                    'cve': 'CVE-2024-0001',
-                    'severity': 'CRITICAL',
-                    'description': 'Remote Code Execution in Popular Framework',
-                    'affected_products': ['Framework X v1.0-2.5']
-                }
-            ]
+        # Obtener datos reales de análisis recientes
+        from pathlib import Path
+        import glob
+        import json
+        
+        real_threats = {
+            'active_campaigns': [],
+            'trending_malware': [],
+            'vulnerability_alerts': [],
+            'recent_scans': []
         }
+        
+        # Buscar archivos reales de Wapiti
+        wapiti_files = glob.glob("results/opensource_tools/wapiti_*/report.json")
+        for file_path in wapiti_files[-3:]:  # Últimos 3
+            try:
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                    vulns = data.get('vulnerabilities', {})
+                    total_vulns = sum(len(v) for v in vulns.values() if isinstance(v, list))
+                    if total_vulns > 0:
+                        real_threats['recent_scans'].append({
+                            'tool': 'Wapiti',
+                            'vulnerabilities_found': total_vulns,
+                            'categories': list(vulns.keys()),
+                            'scan_date': os.path.getmtime(file_path)
+                        })
+            except Exception:
+                continue
+        
+        # Buscar archivos reales de Nikto
+        nikto_files = glob.glob("results/opensource_tools/nikto_*/nikto_report.json")
+        for file_path in nikto_files[-3:]:  # Últimos 3
+            try:
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    content = f.read()
+                    json_lines = [line for line in content.strip().split('\n') if line.strip()]
+                    if json_lines:
+                        data = json.loads(json_lines[-1])
+                        vulns = data.get('vulnerabilities', [])
+                        if vulns:
+                            real_threats['recent_scans'].append({
+                                'tool': 'Nikto',
+                                'vulnerabilities_found': len(vulns),
+                                'scan_date': os.path.getmtime(file_path)
+                            })
+            except Exception:
+                continue
+        
+        # Si no hay datos reales, indicarlo
+        if not real_threats['recent_scans']:
+            real_threats['message'] = 'No hay datos de análisis recientes disponibles'
+        
+        threat_intel = real_threats
         
         return JSONResponse(content=threat_intel)
     except Exception as e:

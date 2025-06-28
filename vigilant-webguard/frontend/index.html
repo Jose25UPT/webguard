@@ -3,38 +3,232 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Vigilant WebGuard - Dashboard</title>
+  <title>Vigilant WebGuard - Escáner de Seguridad Web</title>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    /* Estilo Nessus - Colores celestes profesionales */
+    :root {
+      --primary-blue: #1e3a8a;
+      --secondary-blue: #3b82f6;
+      --light-blue: #dbeafe;
+      --accent-blue: #60a5fa;
+      --dark-blue: #1e40af;
+      --bg-blue: #f0f9ff;
+      --text-blue: #1e3a8a;
+      --border-blue: #93c5fd;
+    }
+    
+    body {
+      background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #b3e5fc 100%);
+      min-height: 100vh;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    
+    .nessus-gradient {
+      background: linear-gradient(135deg, var(--primary-blue) 0%, var(--secondary-blue) 100%);
+    }
+    
+    .nessus-sidebar {
+      background: linear-gradient(180deg, var(--primary-blue) 0%, var(--dark-blue) 100%);
+      box-shadow: 4px 0 15px rgba(30, 58, 138, 0.3);
+    }
+    
+    .nessus-card {
+      background: rgba(255, 255, 255, 0.95);
+      border: 1px solid var(--border-blue);
+      box-shadow: 0 4px 20px rgba(59, 130, 246, 0.1);
+      transition: all 0.3s ease;
+    }
+    
+    .nessus-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 30px rgba(59, 130, 246, 0.2);
+      border-color: var(--secondary-blue);
+    }
+    
+    .nessus-button {
+      background: linear-gradient(135deg, var(--secondary-blue) 0%, var(--accent-blue) 100%);
+      border: none;
+      color: white;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 10px rgba(59, 130, 246, 0.3);
+    }
+    
+    .nessus-button:hover {
+      background: linear-gradient(135deg, var(--dark-blue) 0%, var(--secondary-blue) 100%);
+      box-shadow: 0 4px 20px rgba(59, 130, 246, 0.4);
+      transform: translateY(-2px);
+    }
+    
+    .pulse-blue {
+      animation: pulseBlue 2s infinite;
+    }
+    
+    @keyframes pulseBlue {
+      0%, 100% { 
+        background-color: var(--accent-blue);
+        box-shadow: 0 0 0 0 rgba(96, 165, 250, 0.7);
+      }
+      50% { 
+        background-color: var(--secondary-blue);
+        box-shadow: 0 0 0 10px rgba(96, 165, 250, 0);
+      }
+    }
+    
+    .status-indicator {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #10b981;
+      animation: statusPulse 2s infinite;
+    }
+    
+    @keyframes statusPulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.6; }
+    }
+    
+    .nav-item {
+      transition: all 0.3s ease;
+      border-radius: 8px;
+      margin: 4px 0;
+    }
+    
+    .nav-item:hover {
+      background: rgba(255, 255, 255, 0.1);
+      transform: translateX(5px);
+    }
+    
+    .nav-item.active {
+      background: rgba(255, 255, 255, 0.2);
+      border-left: 4px solid var(--accent-blue);
+    }
+    
+    .progress-bar {
+      background: linear-gradient(90deg, var(--secondary-blue) 0%, var(--accent-blue) 100%);
+      height: 8px;
+      border-radius: 4px;
+      transition: width 0.5s ease;
+    }
+    
+    .vulnerability-high {
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+      color: white;
+    }
+    
+    .vulnerability-medium {
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+      color: white;
+    }
+    
+    .vulnerability-low {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: white;
+    }
+    
+    .scan-input {
+      border: 2px solid var(--border-blue);
+      transition: all 0.3s ease;
+    }
+    
+    .scan-input:focus {
+      border-color: var(--secondary-blue);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+      outline: none;
+    }
+    
+    .header-title {
+      background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+  </style>
 </head>
-<body class="bg-gray-100 text-gray-800 font-sans">
+<body class="bg-gray-50 text-gray-800 font-sans">
   <div class="flex h-screen">
-    <!-- Sidebar estilo Zabbix -->
-    <aside class="w-64 bg-white border-r shadow flex flex-col justify-between p-4">
-      <div>
-        <h1 class="text-xl font-bold text-indigo-600 mb-6">Vigilant WebGuard</h1>
-        <nav class="space-y-2 text-sm">
-          <a href="./dashboard.html" class="block py-1 text-gray-700 hover:text-indigo-600">🛡️ SOC Dashboard</a>
-          <a href="#" class="block py-1 text-gray-700 hover:text-indigo-600">📈 Reportes</a>
-          <a href="#" class="block py-1 text-gray-700 hover:text-indigo-600">🔍 Escaneo</a>
-        </nav>
+    <!-- Sidebar mejorado -->
+    <aside class="w-72 bg-white border-r-2 border-gray-200 shadow-xl flex flex-col">
+      <div class="gradient-bg p-6 text-white">
+        <div class="flex items-center space-x-3 mb-6">
+          <i class="fas fa-shield-alt text-3xl"></i>
+          <div>
+            <h1 class="text-xl font-bold">Vigilant WebGuard</h1>
+            <p class="text-sm opacity-80">Escáner de Seguridad Web</p>
+          </div>
+        </div>
+        <div class="bg-white bg-opacity-20 rounded-lg p-3">
+          <div class="flex items-center space-x-2">
+            <div class="w-3 h-3 bg-green-400 rounded-full pulse-animation"></div>
+            <span class="text-sm">Sistema Operativo</span>
+          </div>
+        </div>
       </div>
-      <footer class="text-xs text-gray-400">
-        &copy; 2025 Vigilant WebGuard
+      
+      <nav class="flex-1 p-4 space-y-2">
+        <div class="mb-4">
+          <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Panel Principal</h3>
+          <button onclick="showSection('scanner')" class="nav-btn w-full flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-50 transition-colors text-left">
+            <i class="fas fa-search text-blue-600"></i>
+            <span class="font-medium">Escáner Web</span>
+          </button>
+        </div>
+        
+        <div class="mb-4">
+          <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Centro de Operaciones</h3>
+          <button onclick="showDashboard()" class="nav-btn w-full flex items-center space-x-3 p-3 rounded-lg hover:bg-purple-50 transition-colors text-left">
+            <i class="fas fa-tachometer-alt text-purple-600"></i>
+            <span class="font-medium">SOC Dashboard</span>
+          </button>
+          <button onclick="showSection('reports')" class="nav-btn w-full flex items-center space-x-3 p-3 rounded-lg hover:bg-green-50 transition-colors text-left">
+            <i class="fas fa-chart-line text-green-600"></i>
+            <span class="font-medium">Reportes</span>
+          </button>
+          <button onclick="showSection('history')" class="nav-btn w-full flex items-center space-x-3 p-3 rounded-lg hover:bg-orange-50 transition-colors text-left">
+            <i class="fas fa-history text-orange-600"></i>
+            <span class="font-medium">Historial</span>
+          </button>
+        </div>
+      </nav>
+      
+      <footer class="p-4 border-t border-gray-200">
+        <div class="text-center">
+          <p class="text-xs text-gray-500">&copy; 2025 Vigilant WebGuard</p>
+          <p class="text-xs text-gray-400">Versión 2.0.0</p>
+        </div>
       </footer>
     </aside>
 
     <!-- Main content -->
-    <main class="flex-1 p-6 overflow-y-auto">
-      <div class="flex justify-between items-center mb-4">
-        <h2 class="text-xl font-semibold">Panel de Análisis</h2>
-        <button id="downloadPdfBtn"
-          class="text-sm bg-indigo-500 hover:bg-indigo-600 text-white px-3 py-1.5 rounded shadow-sm">
-          🗄 Descargar PDF
-        </button>
-      </div>
+    <main class="flex-1 overflow-y-auto">
+      <!-- Sección Principal: Escáner Web -->
+      <section id="scanner" class="section-content p-6">
+        <div class="mb-6">
+          <div class="flex items-center space-x-3 mb-2">
+            <i class="fas fa-search text-blue-600 text-2xl"></i>
+            <h2 class="text-2xl font-bold text-gray-800">Escáner de Seguridad Web</h2>
+          </div>
+          <p class="text-gray-600 typing-animation">Análisis avanzado de vulnerabilidades en tiempo real</p>
+        </div>
+        
+        <div class="flex justify-between items-center mb-6">
+          <div class="flex items-center space-x-4">
+            <div class="flex items-center space-x-2">
+              <div class="w-3 h-3 bg-green-500 rounded-full pulse-animation"></div>
+              <span class="text-sm text-gray-600">Sistema Activo</span>
+            </div>
+            <div class="text-sm text-gray-500">Última actualización: <span id="lastUpdate">hace 2 segundos</span></div>
+          </div>
+          <button id="downloadPdfBtn"
+            class="flex items-center space-x-2 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white px-4 py-2 rounded-lg shadow-lg transition-all">
+            <i class="fas fa-download"></i>
+            <span>Descargar PDF</span>
+          </button>
+        </div>
 
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <!-- Formulario -->
@@ -117,7 +311,140 @@
       <div id="outputContainer" class="mt-6 hidden">
         <h3 class="text-md font-medium mb-2">Raw Output:</h3>
         <pre id="output" class="bg-gray-50 border p-4 rounded text-sm overflow-x-auto whitespace-pre-wrap"></pre>
-      </div>
+      </section>
+      
+      <!-- Sección de Reportes -->
+      <section id="reports" class="section-content p-6 hidden">
+        <div class="mb-6">
+          <div class="flex items-center space-x-3 mb-2">
+            <i class="fas fa-chart-line text-green-600 text-2xl"></i>
+            <h2 class="text-2xl font-bold text-gray-800">Reportes de Seguridad</h2>
+          </div>
+          <p class="text-gray-600">Análisis histórico y tendencias de seguridad</p>
+        </div>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+          <div class="bg-white p-6 rounded-lg shadow card-hover">
+            <div class="flex items-center space-x-3 mb-4">
+              <i class="fas fa-calendar-week text-blue-600"></i>
+              <h3 class="font-semibold">Reporte Semanal</h3>
+            </div>
+            <p class="text-sm text-gray-600 mb-4">Resumen de la última semana</p>
+            <button class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">
+              Generar Reporte
+            </button>
+          </div>
+          
+          <div class="bg-white p-6 rounded-lg shadow card-hover">
+            <div class="flex items-center space-x-3 mb-4">
+              <i class="fas fa-calendar-alt text-green-600"></i>
+              <h3 class="font-semibold">Reporte Mensual</h3>
+            </div>
+            <p class="text-sm text-gray-600 mb-4">Análisis completo del mes</p>
+            <button class="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700">
+              Generar Reporte
+            </button>
+          </div>
+          
+          <div class="bg-white p-6 rounded-lg shadow card-hover">
+            <div class="flex items-center space-x-3 mb-4">
+              <i class="fas fa-chart-bar text-purple-600"></i>
+              <h3 class="font-semibold">Reporte Personalizado</h3>
+            </div>
+            <p class="text-sm text-gray-600 mb-4">Configurar fechas específicas</p>
+            <button class="w-full bg-purple-600 text-white py-2 rounded hover:bg-purple-700">
+              Configurar
+            </button>
+          </div>
+        </div>
+        
+        <div class="bg-white p-6 rounded-lg shadow">
+          <h3 class="text-lg font-semibold mb-4">Últimos Reportes Generados</h3>
+          <div class="space-y-3">
+            <div class="flex items-center justify-between p-3 border border-gray-200 rounded">
+              <div>
+                <div class="font-medium">Reporte de Seguridad - Enero 2025</div>
+                <div class="text-sm text-gray-600">Generado el 28/01/2025</div>
+              </div>
+              <div class="flex space-x-2">
+                <button class="text-blue-600 hover:text-blue-800">
+                  <i class="fas fa-eye"></i> Ver
+                </button>
+                <button class="text-green-600 hover:text-green-800">
+                  <i class="fas fa-download"></i> Descargar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      
+      <!-- Sección de Historial -->
+      <section id="history" class="section-content p-6 hidden">
+        <div class="mb-6">
+          <div class="flex items-center space-x-3 mb-2">
+            <i class="fas fa-history text-orange-600 text-2xl"></i>
+            <h2 class="text-2xl font-bold text-gray-800">Historial de Análisis</h2>
+          </div>
+          <p class="text-gray-600">Registro completo de todos los escaneos realizados</p>
+        </div>
+        
+        <div class="bg-white p-6 rounded-lg shadow">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-semibold">Análisis Recientes</h3>
+            <div class="flex space-x-2">
+              <input type="text" placeholder="Buscar por URL..." class="px-3 py-2 border border-gray-300 rounded text-sm">
+              <button class="px-4 py-2 bg-blue-600 text-white rounded text-sm hover:bg-blue-700">
+                <i class="fas fa-search"></i>
+              </button>
+            </div>
+          </div>
+          
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th class="px-4 py-3 text-left">Fecha</th>
+                  <th class="px-4 py-3 text-left">URL</th>
+                  <th class="px-4 py-3 text-left">Herramienta</th>
+                  <th class="px-4 py-3 text-left">Vulnerabilidades</th>
+                  <th class="px-4 py-3 text-left">Estado</th>
+                  <th class="px-4 py-3 text-left">Acciones</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-200">
+                <tr>
+                  <td class="px-4 py-3">28/01/2025 10:30</td>
+                  <td class="px-4 py-3">https://ejemplo.com</td>
+                  <td class="px-4 py-3">
+                    <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">Wapiti</span>
+                  </td>
+                  <td class="px-4 py-3">
+                    <span class="px-2 py-1 bg-red-100 text-red-800 rounded text-xs">5 críticas</span>
+                  </td>
+                  <td class="px-4 py-3">
+                    <span class="px-2 py-1 bg-green-100 text-green-800 rounded text-xs">Completado</span>
+                  </td>
+                  <td class="px-4 py-3">
+                    <div class="flex space-x-2">
+                      <button class="text-blue-600 hover:text-blue-800">
+                        <i class="fas fa-eye"></i>
+                      </button>
+                      <button class="text-green-600 hover:text-green-800">
+                        <i class="fas fa-download"></i>
+                      </button>
+                      <button class="text-red-600 hover:text-red-800">
+                        <i class="fas fa-trash"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+      
     </main>
   </div>
 
@@ -132,13 +459,15 @@
     
     document.getElementById('scanButton').onclick = async () => {
       const target = document.getElementById('target').value;
-      const engine = document.getElementById('engine').value;
       
       if (!target) {
         alert('Por favor ingresa una URL para escanear');
         return;
       }
 
+      // Resetear antes de empezar
+      await resetScanner();
+      
       // Mostrar progreso
       const progressSection = document.getElementById('progressSection');
       const progressBar = document.getElementById('progressBar');
@@ -148,42 +477,63 @@
       progressSection.classList.remove('hidden');
       container.classList.remove('hidden');
       
-      scanTarget.textContent = `Análisis en tiempo real: ${target}`;
-      scanStatus.textContent = 'Iniciando análisis progresivo...';
+      scanTarget.textContent = `Escaneo de seguridad: ${target}`;
+      scanStatus.textContent = 'Iniciando escaneo con Wapiti...';
       progressBar.style.width = '0%';
       progressBar.style.backgroundColor = '#3b82f6'; // Azul inicial
       
-      output.textContent = '🚀 Iniciando análisis progresivo en tiempo real...';
+      output.textContent = '🚀 Iniciando escaneo de seguridad (máximo 5 minutos)...';
 
       try {
-        // Iniciar análisis progresivo
-        const response = await fetch('/api/live/start-live-scan', {
+        // Usar el endpoint limpio
+        const response = await fetch('/api/clean-scan', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ url: target })
         });
+        
+        if (!response.ok) {
+          throw new Error('Error en el servidor');
+        }
+        
         const data = await response.json();
         
-        currentScanId = data.scan_id;
-        
-        // Iniciar actualizaciones en tiempo real
-        startLiveUpdates(currentScanId);
-        
-        // Notificar al Service Worker
-        if (navigator.serviceWorker.controller) {
-          navigator.serviceWorker.controller.postMessage({
-            type: 'START_SCAN_MONITORING',
-            data: { scanId: currentScanId, targetUrl: target }
-          });
+        // Simular progreso
+        for (let i = 0; i <= 100; i += 10) {
+          progressBar.style.width = i + '%';
+          if (i < 50) {
+            scanStatus.textContent = 'Analizando con Wapiti...';
+          } else if (i < 90) {
+            scanStatus.textContent = 'Procesando vulnerabilidades...';
+          } else {
+            scanStatus.textContent = 'Finalizando análisis...';
+          }
+          await new Promise(resolve => setTimeout(resolve, 200));
         }
+        
+        // Mostrar resultados
+        progressBar.style.backgroundColor = '#10b981'; // Verde
+        scanStatus.textContent = '✅ Escaneo completado exitosamente';
         
         output.textContent = JSON.stringify(data, null, 2);
         
+        showInPageNotification(
+          '¡Escaneo Completado!', 
+          `Se encontraron ${data.total_vulnerabilities} vulnerabilidades (${data.critical_vulnerabilities} críticas)`,
+          'success'
+        );
+        
+        // Cargar resultados
+        setTimeout(async () => {
+          await loadCleanResults();
+          progressSection.classList.add('hidden');
+        }, 2000);
+        
       } catch (err) {
         progressBar.style.backgroundColor = '#ef4444'; // Rojo
-        scanStatus.textContent = '❌ Error iniciando análisis';
-        output.textContent = "❌ " + err.message;
-        showInPageNotification('Error', 'No se pudo iniciar el análisis.', 'error');
+        scanStatus.textContent = '❌ Error en el escaneo';
+        output.textContent = "❌ Error: " + err.message;
+        showInPageNotification('Error', 'No se pudo completar el escaneo.', 'error');
       }
     };
     
@@ -373,21 +723,68 @@
       document.getElementById('statisticsSection').classList.remove('hidden');
     };
 
+    // Botón de descarga de PDF actualizado
     document.getElementById("downloadPdfBtn").addEventListener("click", async () => {
+      const button = document.getElementById("downloadPdfBtn");
+      const originalText = button.innerHTML;
+      
       try {
-        const response = await fetch("/api/pentest/download-pdf");
-        if (!response.ok) throw new Error("No se pudo generar el PDF.");
+        // Deshabilitar botón durante descarga
+        button.disabled = true;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>Generando...</span>';
+        
+        showInPageNotification('Generando PDF...', 'Creando reporte con evidencias reales', 'info');
+        
+        const response = await fetch("/api/clean-scan/download-pdf", {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/pdf'
+          }
+        });
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(errorText || "No se pudo generar el PDF.");
+        }
+        
         const blob = await response.blob();
+        
+        // Verificar que el blob es un PDF válido
+        if (blob.type !== 'application/pdf' && !blob.type.includes('pdf')) {
+          throw new Error('El archivo descargado no es un PDF válido');
+        }
+        
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = "reporte_seguridad.pdf";
+        a.download = `security_report_${new Date().toISOString().split('T')[0]}.pdf`;
+        a.style.display = 'none';
         document.body.appendChild(a);
         a.click();
-        a.remove();
-        window.URL.revokeObjectURL(url);
+        
+        // Limpiar después de un breve delay
+        setTimeout(() => {
+          document.body.removeChild(a);
+          window.URL.revokeObjectURL(url);
+        }, 100);
+        
+        showInPageNotification('¡PDF Descargado!', 'Archivo guardado exitosamente', 'success');
+        
+        // Llamar al endpoint de limpieza
+        try {
+          await fetch('/api/clean-scan/cleanup', { method: 'POST' });
+          showInPageNotification('Limpieza', 'Archivos temporales eliminados', 'info');
+        } catch (cleanupError) {
+          console.warn('Error en limpieza:', cleanupError);
+        }
+        
       } catch (e) {
-        alert("❌ Error al descargar el PDF: " + e.message);
+        console.error('Error en descarga PDF:', e);
+        showInPageNotification('Error', 'No se pudo descargar el PDF: ' + e.message, 'error');
+      } finally {
+        // Restaurar botón
+        button.disabled = false;
+        button.innerHTML = originalText;
       }
     });
 
@@ -660,8 +1057,235 @@
       }
     }
     
+    // Funciones de navegación
+    function showSection(sectionId) {
+      // Ocultar todas las secciones
+      document.querySelectorAll('.section-content').forEach(section => {
+        section.classList.add('hidden');
+      });
+      
+      // Mostrar sección seleccionada
+      document.getElementById(sectionId).classList.remove('hidden');
+      
+      // Actualizar estado de navegación
+      document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.classList.remove('bg-blue-100', 'bg-purple-100', 'bg-green-100', 'bg-orange-100');
+      });
+      
+      // Resaltar botón activo
+      event.target.closest('.nav-btn').classList.add(
+        sectionId === 'scanner' ? 'bg-blue-100' :
+        sectionId === 'reports' ? 'bg-green-100' :
+        sectionId === 'history' ? 'bg-orange-100' : 'bg-blue-100'
+      );
+    }
+    
+    // Función para mostrar el dashboard SOC en la misma página
+    function showDashboard() {
+      // Ocultar todas las secciones
+      document.querySelectorAll('.section-content').forEach(section => {
+        section.classList.add('hidden');
+      });
+      
+      // Buscar sección existente del dashboard
+      let dashboardSection = document.getElementById('dashboard-section');
+      
+      // Si no existe, crearla
+      if (!dashboardSection) {
+        const main = document.querySelector('main');
+        dashboardSection = document.createElement('section');
+        dashboardSection.id = 'dashboard-section';
+        dashboardSection.className = 'section-content p-0';
+        dashboardSection.innerHTML = `
+          <div class="h-full">
+            <div class="flex items-center justify-between p-4 bg-gradient-to-r from-purple-600 to-purple-800 text-white">
+              <div class="flex items-center space-x-3">
+                <i class="fas fa-tachometer-alt text-2xl"></i>
+                <h2 class="text-xl font-bold">SOC Dashboard</h2>
+              </div>
+              <button onclick="reloadDashboard()" class="bg-white bg-opacity-20 hover:bg-opacity-30 px-3 py-1 rounded text-sm transition-colors">
+                <i class="fas fa-sync-alt"></i> Recargar
+              </button>
+            </div>
+            <iframe 
+              id="dashboard-iframe"
+              src="./dashboard.html" 
+              class="w-full border-0"
+              style="height: calc(100vh - 120px);"
+              title="SOC Dashboard"
+              onload="onDashboardLoaded()"
+            ></iframe>
+          </div>
+        `;
+        main.appendChild(dashboardSection);
+      } else {
+        // Si ya existe, recargar el iframe para evitar problemas de estado
+        const iframe = dashboardSection.querySelector('#dashboard-iframe');
+        if (iframe) {
+          iframe.src = iframe.src; // Forzar recarga
+        }
+      }
+      
+      // Mostrar sección del dashboard
+      dashboardSection.classList.remove('hidden');
+      
+      // Actualizar estado de navegación
+      document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.classList.remove('bg-blue-100', 'bg-purple-100', 'bg-green-100', 'bg-orange-100');
+      });
+      
+      // Resaltar botón del dashboard
+      if (event && event.target) {
+        event.target.closest('.nav-btn').classList.add('bg-purple-100');
+      }
+    }
+    
+    // Función para recargar dashboard
+    function reloadDashboard() {
+      const iframe = document.getElementById('dashboard-iframe');
+      if (iframe) {
+        iframe.src = './dashboard.html?' + new Date().getTime(); // Agregar timestamp para evitar cache
+        showInPageNotification('Dashboard', 'Recargando dashboard...', 'info');
+      }
+    }
+    
+    // Función cuando el dashboard carga
+    function onDashboardLoaded() {
+      console.log('Dashboard cargado exitosamente');
+    }
+    
+    // Actualizar la hora cada segundo
+    function updateTime() {
+      const now = new Date();
+      const timeString = now.toLocaleTimeString();
+      const lastUpdateElement = document.getElementById('lastUpdate');
+      if (lastUpdateElement) {
+        lastUpdateElement.textContent = `actualizado ${timeString}`;
+      }
+    }
+    
+    // Actualizar tiempo cada 30 segundos
+    setInterval(updateTime, 30000);
+    
+    // Función para resetear el scanner
+    async function resetScanner() {
+      try {
+        await fetch('/api/clean-scan/reset', { method: 'POST' });
+      } catch (e) {
+        console.error('Error reseteando scanner:', e);
+      }
+    }
+    
+    // Función para cargar resultados del endpoint limpio
+    async function loadCleanResults() {
+      try {
+        const response = await fetch('/api/clean-scan/last-result');
+        if (!response.ok) {
+          reportIcons.innerHTML = '<p class="text-gray-500 text-sm">⏳ No hay resultados disponibles aún.</p>';
+          return;
+        }
+        
+        const results = await response.json();
+        
+        const reportIcons = document.getElementById('reportIcons');
+        const scanUrlDisplay = document.getElementById('scanUrlDisplay');
+        
+        scanUrlDisplay.innerHTML = `<strong>🎯 URL Escaneada:</strong> ${results.target_url}`;
+        reportIcons.innerHTML = '';
+        
+        // Mostrar resumen del escaneo
+        const summary = document.createElement('div');
+        summary.className = 'mb-4 p-4 border border-blue-200 rounded bg-blue-50';
+        summary.innerHTML = `
+          <h4 class="font-bold text-blue-700 mb-3">📊 Resumen del Escaneo</h4>
+          <div class="grid grid-cols-2 gap-4 text-sm">
+            <div>
+              <span class="font-semibold">Duración:</span> 
+              <span class="text-blue-600">${results.duration || 0} segundos</span>
+            </div>
+            <div>
+              <span class="font-semibold">Estado:</span> 
+              <span class="text-green-600 font-bold">${results.status}</span>
+            </div>
+            <div>
+              <span class="font-semibold">Total Vulnerabilidades:</span> 
+              <span class="text-red-600 font-bold">${results.scan_metadata?.total_vulnerabilities || 0}</span>
+            </div>
+            <div>
+              <span class="font-semibold">Críticas:</span> 
+              <span class="text-red-700 font-bold">${results.scan_metadata?.critical_vulnerabilities || 0}</span>
+            </div>
+          </div>
+        `;
+        reportIcons.appendChild(summary);
+        
+        // Mostrar vulnerabilidades si existen
+        if (results.vulnerabilities && Object.keys(results.vulnerabilities).length > 0) {
+          Object.entries(results.vulnerabilities).forEach(([category, vulns]) => {
+            if (Array.isArray(vulns) && vulns.length > 0) {
+              const section = document.createElement('div');
+              section.className = 'mb-4 p-3 border border-gray-200 rounded bg-gray-50';
+              
+              let html = `<h4 class="text-sm font-bold text-indigo-700 mb-2">${category} (${vulns.length})</h4><ul class="space-y-2 text-xs">`;
+              
+              vulns.forEach(vuln => {
+                const severityColor = vuln.level >= 3 ? 'text-red-600' : vuln.level === 2 ? 'text-orange-600' : 'text-yellow-600';
+                html += `
+                  <li class="p-2 bg-white rounded border">
+                    <div><strong>ℹ️ Info:</strong> ${vuln.info || '—'}</div>
+                    <div><strong>🔍 Método:</strong> ${vuln.method || '—'} <strong>Ruta:</strong> ${vuln.path || '/'}</div>
+                    <div><strong>🎯 Nivel:</strong> <span class="${severityColor} font-bold">${vuln.level}</span></div>
+                    ${vuln.parameter ? `<div><strong>📋 Parámetro:</strong> ${vuln.parameter}</div>` : ''}
+                  </li>
+                `;
+              });
+              
+              html += '</ul>';
+              section.innerHTML = html;
+              reportIcons.appendChild(section);
+            }
+          });
+        }
+        
+        if (reportIcons.children.length === 1) { // Solo el resumen
+          const noVulns = document.createElement('div');
+          noVulns.className = 'p-4 border border-green-200 rounded bg-green-50';
+          noVulns.innerHTML = '<p class="text-green-700 font-medium">✅ No se detectaron vulnerabilidades en este escaneo.</p>';
+          reportIcons.appendChild(noVulns);
+        }
+        
+      } catch (error) {
+        console.error('Error cargando resultados:', error);
+        reportIcons.innerHTML = '<p class="text-red-500 text-sm">❌ Error cargando resultados.</p>';
+      }
+    }
+    
+    // Función para resetear la interfaz
+    function resetInterface() {
+      // Limpiar displays
+      document.getElementById('scanUrlDisplay').innerHTML = '';
+      document.getElementById('reportIcons').innerHTML = '<p class="text-gray-400 text-sm">⏳ Interfaz reseteada. Listo para nuevo escaneo.</p>';
+      
+      // Ocultar secciones
+      document.getElementById('statisticsSection').classList.add('hidden');
+      document.getElementById('progressSection').classList.add('hidden');
+      document.getElementById('outputContainer').classList.add('hidden');
+      
+      // Limpiar campos
+      document.getElementById('target').value = '';
+      document.getElementById('output').textContent = '';
+      
+      showInPageNotification('Listo', 'Interfaz reseteada. Listo para nuevo escaneo.', 'success');
+    }
+    
     // Ejecutar al cargar
-    window.onload = loadLastJson;
+    window.onload = () => {
+      updateTime();
+      // Mostrar la sección scanner por defecto
+      showSection('scanner');
+      // Cargar resultados si existen
+      loadCleanResults();
+    };
   </script>
 </body>
 </html>

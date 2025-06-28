@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, BackgroundTasks, Request
 from fastapi.responses import FileResponse
 from app.models.scan import ScanResult
 from app.utils.pdf_generator import generate_pdf_from_json
-from app.core.scanner import scan_target_async as scan_target  # ✅ Import corregido
+from app.core.real_scanner import scan_target_async, cleanup_old_reports
 from fastapi.responses import JSONResponse
 import glob
 import os
@@ -14,12 +14,12 @@ router = APIRouter()
 
 async def tu_funcion_de_escaneo(scan_id: str, target: str, tool: str):
     try:
-        result = await scan_target(target)
-        output_path = result.get("output_file")
-        # Puedes guardar el resultado si deseas o extender esta lógica
+        result = await scan_target_async(target)
         print(f"Escaneo completado para {target} con ID {scan_id}")
+        return result
     except Exception as e:
         print(f"Error en escaneo {scan_id}: {e}")
+        return None
 
 @router.post("/scan", response_model=ScanResult)
 async def start_scan(request: Request, background_tasks: BackgroundTasks):

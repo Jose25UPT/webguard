@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vigilant WebGuard - Análisis Profundo</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="bg-gray-100 text-gray-800 font-sans">
+  <div class="flex h-screen">
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white border-r shadow flex flex-col justify-between p-4">
+      <div>
+        <h1 class="text-xl font-bold text-indigo-600 mb-6">
+          <i class="fas fa-shield-alt mr-2"></i>Vigilant WebGuard
+        </h1>
+        <nav class="space-y-2 text-sm">
+          <a href="./index.html" class="block py-2 text-gray-700 hover:text-indigo-600">
+            <i class="fas fa-home mr-2"></i>Dashboard Principal
+          </a>
+          <a href="./deep-analysis.html" class="block py-2 text-indigo-600 font-semibold border-l-2 border-indigo-600 pl-2">
+            <i class="fas fa-search-plus mr-2"></i>Análisis Profundo
+          </a>
+          <a href="./dashboard.html" class="block py-2 text-gray-700 hover:text-indigo-600">
+            <i class="fas fa-chart-line mr-2"></i>SOC Dashboard
+          </a>
+          <a href="#" class="block py-2 text-gray-700 hover:text-indigo-600">
+            <i class="fas fa-file-alt mr-2"></i>Reportes
+          </a>
+        </nav>
+      </div>
+      <footer class="text-xs text-gray-400">
+        &copy; 2025 Vigilant WebGuard
+      </footer>
+    </aside>
+
+    <!-- Main content -->
+    <main class="flex-1 p-6 overflow-y-auto">
+      <!-- Header -->
+      <div class="flex justify-between items-center mb-6">
+        <div>
+          <h2 class="text-2xl font-bold text-gray-800">Análisis Profundo de Seguridad</h2>
+          <p class="text-gray-600">Herramientas múltiples para análisis comprehensivo</p>
+        </div>
+        <div class="flex space-x-3">
+          <button id="viewResultsBtn" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50" disabled>
+            <i class="fas fa-eye mr-2"></i>Ver Resultados
+          </button>
+          <button id="downloadPdfBtn" class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 disabled:opacity-50" disabled>
+            <i class="fas fa-download mr-2"></i>Descargar PDF
+          </button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Panel de configuración -->
+        <div class="lg:col-span-1 space-y-6">
+          <!-- Formulario de escaneo -->
+          <div class="bg-white p-6 rounded-lg shadow">
+            <h3 class="text-lg font-bold mb-4">
+              <i class="fas fa-cog mr-2 text-indigo-600"></i>Configuración del Análisis
+            </h3>
+            
+            <!-- URL objetivo -->
+            <div class="mb-4">
+              <label class="block text-sm font-medium text-gray-700 mb-2">URL Objetivo</label>
+              <input 
+                id="targetUrl" 
+                type="url" 
+                placeholder="https://ejemplo.com" 
+                class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                required
+              />
+            </div>
+
+            <!-- Selección de herramientas -->
+            <div class="mb-6">
+              <label class="block text-sm font-medium text-gray-700 mb-3">Herramientas de Análisis</label>
+              <div class="space-y-3">
+                <div class="border border-gray-200 rounded-lg p-3">
+                  <label class="flex items-start space-x-3 cursor-pointer">
+                    <input type="checkbox" id="tool-wapiti3" value="wapiti3" class="mt-1 h-4 w-4 text-indigo-600 rounded border-gray-300">
+                    <div class="flex-1">
+                      <div class="text-sm font-medium text-gray-900">Wapiti3</div>
+                      <div class="text-xs text-gray-500">Escáner de vulnerabilidades web (XSS, SQL Injection, etc.)</div>
+                      <div class="text-xs text-blue-600">⏱️ 10-20 minutos</div>
+                    </div>
+                  </label>
+                </div>
+
+                <div class="border border-gray-200 rounded-lg p-3">
+                  <label class="flex items-start space-x-3 cursor-pointer">
+                    <input type="checkbox" id="tool-nikto" value="nikto" class="mt-1 h-4 w-4 text-indigo-600 rounded border-gray-300">
+                    <div class="flex-1">
+                      <div class="text-sm font-medium text-gray-900">Nikto</div>
+                      <div class="text-xs text-gray-500">Escáner de configuración de servidores web</div>
+                      <div class="text-xs text-blue-600">⏱️ 5-15 minutos</div>
+                    </div>
+                  </label>
+                </div>
+
+                <div class="border border-gray-200 rounded-lg p-3">
+                  <label class="flex items-start space-x-3 cursor-pointer">
+                    <input type="checkbox" id="tool-custom" value="custom" class="mt-1 h-4 w-4 text-indigo-600 rounded border-gray-300" checked>
+                    <div class="flex-1">
+                      <div class="text-sm font-medium text-gray-900">Análisis Personalizado</div>
+                      <div class="text-xs text-gray-500">Reconocimiento, búsqueda de credenciales y análisis profundo</div>
+                      <div class="text-xs text-blue-600">⏱️ 5-10 minutos</div>
+                    </div>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Botón de inicio -->
+            <button 
+              id="startScanBtn"
+              class="w-full bg-indigo-600 text-white py-3 px-4 rounded-lg hover:bg-indigo-700 font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <i class="fas fa-play mr-2"></i>Iniciar Análisis Profundo
+            </button>
+
+            <!-- Indicadores rápidos -->
+            <div class="mt-4 p-3 bg-blue-50 rounded-lg">
+              <div class="text-xs text-blue-700 font-medium mb-1">💡 Recomendaciones:</div>
+              <ul class="text-xs text-blue-600 space-y-1">
+                <li>• Para análisis completo: seleccionar todas las herramientas</li>
+                <li>• Wapiti3 + Custom: enfoque en vulnerabilidades web</li>
+                <li>• Solo Custom: reconocimiento rápido</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Progreso del escaneo -->
+          <div id="progressSection" class="bg-white p-6 rounded-lg shadow hidden">
+            <h3 class="text-lg font-bold mb-4">
+              <i class="fas fa-tasks mr-2 text-green-600"></i>Progreso del Análisis
+            </h3>
+            
+            <div id="scanStatus" class="text-sm text-gray-600 mb-3">Preparando análisis...</div>
+            
+            <div class="space-y-3">
+              <!-- Fase actual -->
+              <div>
+                <div class="flex justify-between text-sm mb-1">
+                  <span id="currentPhase">Inicializando...</span>
+                  <span id="progressPercent">0%</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2">
+                  <div id="progressBar" class="bg-indigo-600 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+                </div>
+              </div>
+
+              <!-- Estado de fases -->
+              <div class="space-y-2 text-xs">
+                <div id="phase-reconnaissance" class="flex items-center space-x-2">
+                  <div class="w-4 h-4 rounded-full bg-gray-300"></div>
+                  <span>Reconocimiento</span>
+                </div>
+                <div id="phase-tools" class="flex items-center space-x-2">
+                  <div class="w-4 h-4 rounded-full bg-gray-300"></div>
+                  <span>Escaneo con herramientas</span>
+                </div>
+                <div id="phase-custom" class="flex items-center space-x-2">
+                  <div class="w-4 h-4 rounded-full bg-gray-300"></div>
+                  <span>Análisis personalizado</span>
+                </div>
+                <div id="phase-credentials" class="flex items-center space-x-2">
+                  <div class="w-4 h-4 rounded-full bg-gray-300"></div>
+                  <span>Búsqueda de credenciales</span>
+                </div>
+                <div id="phase-analysis" class="flex items-center space-x-2">
+                  <div class="w-4 h-4 rounded-full bg-gray-300"></div>
+                  <span>Análisis de vulnerabilidades</span>
+                </div>
+              </div>
+            </div>
+
+            <div id="scanTarget" class="mt-3 text-xs text-gray-500"></div>
+          </div>
+        </div>
+
+        <!-- Panel de resultados -->
+        <div class="lg:col-span-2 space-y-6">
+          <!-- Resumen de resultados -->
+          <div id="resultsOverview" class="bg-white p-6 rounded-lg shadow hidden">
+            <h3 class="text-lg font-bold mb-4">
+              <i class="fas fa-chart-bar mr-2 text-blue-600"></i>Resumen de Resultados
+            </h3>
+            
+            <div id="scanUrlDisplay" class="mb-4 p-3 bg-blue-50 rounded-lg">
+              <div class="text-sm font-medium text-blue-900">🎯 URL Analizada:</div>
+              <div id="scannedUrl" class="text-blue-700"></div>
+            </div>
+
+            <!-- Métricas principales -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+              <div class="bg-red-50 p-4 rounded-lg text-center">
+                <div id="totalVulns" class="text-2xl font-bold text-red-600">0</div>
+                <div class="text-sm text-red-700">Vulnerabilidades</div>
+              </div>
+              <div class="bg-orange-50 p-4 rounded-lg text-center">
+                <div id="criticalIssues" class="text-2xl font-bold text-orange-600">0</div>
+                <div class="text-sm text-orange-700">Críticas</div>
+              </div>
+              <div class="bg-yellow-50 p-4 rounded-lg text-center">
+                <div id="credentialsFound" class="text-2xl font-bold text-yellow-600">0</div>
+                <div class="text-sm text-yellow-700">Credenciales</div>
+              </div>
+              <div class="bg-blue-50 p-4 rounded-lg text-center">
+                <div id="assetsFound" class="text-2xl font-bold text-blue-600">0</div>
+                <div class="text-sm text-blue-700">Assets</div>
+              </div>
+            </div>
+
+            <!-- Hallazgos por herramienta -->
+            <div id="toolsResults" class="space-y-4">
+              <!-- Se llenarán dinámicamente -->
+            </div>
+          </div>
+
+          <!-- Recomendaciones prioritarias -->
+          <div id="recommendationsSection" class="bg-white p-6 rounded-lg shadow hidden">
+            <h3 class="text-lg font-bold mb-4">
+              <i class="fas fa-lightbulb mr-2 text-yellow-600"></i>Recomendaciones Prioritarias
+            </h3>
+            <div id="recommendationsList" class="space-y-2">
+              <!-- Se llenarán dinámicamente -->
+            </div>
+          </div>
+
+          <!-- Gráficos de análisis -->
+          <div id="chartsSection" class="bg-white p-6 rounded-lg shadow hidden">
+            <h3 class="text-lg font-bold mb-4">
+              <i class="fas fa-chart-pie mr-2 text-purple-600"></i>Análisis Visual
+            </h3>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div>
+                <h4 class="text-sm font-medium text-gray-700 mb-2">Vulnerabilidades por Severidad</h4>
+                <div class="h-64">
+                  <canvas id="severityChart"></canvas>
+                </div>
+              </div>
+              <div>
+                <h4 class="text-sm font-medium text-gray-700 mb-2">Assets Descubiertos</h4>
+                <div class="h-64">
+                  <canvas id="assetsChart"></canvas>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Historial de escaneos -->
+          <div id="scanHistorySection" class="bg-white p-6 rounded-lg shadow">
+            <h3 class="text-lg font-bold mb-4">
+              <i class="fas fa-history mr-2 text-gray-600"></i>Historial de Escaneos
+            </h3>
+            <div id="scanHistoryList" class="space-y-3">
+              <div class="text-center text-gray-500 py-8">
+                <i class="fas fa-search text-3xl mb-2"></i>
+                <p>No hay escaneos anteriores</p>
+                <p class="text-sm">Los resultados aparecerán aquí después del primer análisis</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Modal de detalles -->
+  <div id="detailsModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden">
+    <div class="flex items-center justify-center min-h-screen p-4">
+      <div class="bg-white rounded-lg max-w-4xl w-full max-h-screen overflow-y-auto">
+        <div class="p-6 border-b">
+          <div class="flex justify-between items-center">
+            <h3 class="text-lg font-bold">Detalles del Análisis</h3>
+            <button id="closeModal" class="text-gray-400 hover:text-gray-600">
+              <i class="fas fa-times text-xl"></i>
+            </button>
+          </div>
+        </div>
+        <div id="modalContent" class="p-6">
+          <!-- Contenido dinámico -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Variables globales
+    let currentScanId = null;
+    let scanPollingInterval = null;
+    let charts = {};
+
+    // Elementos DOM
+    const targetUrlInput = document.getElementById('targetUrl');
+    const startScanBtn = document.getElementById('startScanBtn');
+    const progressSection = document.getElementById('progressSection');
+    const resultsOverview = document.getElementById('resultsOverview');
+    const recommendationsSection = document.getElementById('recommendationsSection');
+    const chartsSection = document.getElementById('chartsSection');
+    const viewResultsBtn = document.getElementById('viewResultsBtn');
+    const downloadPdfBtn = document.getElementById('downloadPdfBtn');
+
+    // Inicialización
+    document.addEventListener('DOMContentLoaded', function() {
+      loadScanHistory();
+      setupEventListeners();
+    });
+
+    function setupEventListeners() {
+      startScanBtn.addEventListener('click', startDeepScan);
+      viewResultsBtn.addEventListener('click', viewDetailedResults);
+      downloadPdfBtn.addEventListener('click', downloadPDF);
+      document.getElementById('closeModal').addEventListener('click', closeModal);
+      
+      // Cerrar modal al hacer clic fuera
+      document.getElementById('detailsModal').addEventListener('click', function(e) {
+        if (e.target === this) closeModal();
+      });
+    }
+
+    async function startDeepScan() {
+      const targetUrl = targetUrlInput.value.trim();
+      
+      if (!targetUrl) {
+        showNotification('Error', 'Por favor ingresa una URL válida', 'error');
+        return;
+      }
+
+      // Obtener herramientas seleccionadas
+      const selectedTools = [];
+      document.querySelectorAll('input[type="checkbox"]:checked').forEach(checkbox => {
+        selectedTools.push(checkbox.value);
+      });
+
+      if (selectedTools.length === 0) {
+        showNotification('Error', 'Selecciona al menos una herramienta', 'error');
+        return;
+      }
+
+      try {
+        startScanBtn.disabled = true;
+        startScanBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Iniciando...';
+        
+        // Mostrar progreso
+        showProgressSection(targetUrl, selectedTools);
+        hideResultsSections();
+
+        const response = await fetch('/api/deep-scan/start-deep-scan', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            target_url: targetUrl,
+            selected_tools: selectedTools,
+            deep_scan: true
+          })
+        });
+
+        const data = await response.json();
+        
+        if (!response.ok) {
+          throw new Error(data.detail || 'Error iniciando escaneo');
+        }
+
+        showNotification('Éxito', 'Análisis profundo iniciado correctamente', 'success');
+        
+        // Comenzar polling de progreso
+        startProgressPolling();
+
+      } catch (error) {
+        console.error('Error:', error);
+        showNotification('Error', error.message, 'error');
+        resetScanUI();
+      }
+    }
+
+    function showProgressSection(targetUrl, selectedTools) {
+      progressSection.classList.remove('hidden');
+      document.getElementById('scanTarget').textContent = `Analizando: ${targetUrl}`;
+      document.getElementById('scanStatus').textContent = 
+        `Herramientas: ${selectedTools.join(', ')} - Preparando análisis...`;
+      
+      // Resetear fases
+      document.querySelectorAll('[id^="phase-"]').forEach(phase => {
+        phase.querySelector('div').className = 'w-4 h-4 rounded-full bg-gray-300';
+      });
+    }
+
+    function hideResultsSections() {
+      resultsOverview.classList.add('hidden');
+      recommendationsSection.classList.add('hidden');
+      chartsSection.classList.add('hidden');
+      viewResultsBtn.disabled = true;
+      downloadPdfBtn.disabled = true;
+    }
+
+    async function startProgressPolling() {
+      // Simular progreso mientras esperamos implementación completa
+      let progress = 0;
+      const phases = ['reconnaissance', 'tools', 'custom', 'credentials', 'analysis'];
+      let currentPhaseIndex = 0;
+
+      const simulateProgress = () => {
+        progress += Math.random() * 10;
+        
+        if (progress >= 100) {
+          progress = 100;
+          clearInterval(scanPollingInterval);
+          setTimeout(() => {
+            completeScan();
+          }, 2000);
+        }
+
+        // Actualizar UI
+        updateProgressUI({
+          progress: Math.min(progress, 100),
+          current_phase: phases[currentPhaseIndex] || 'completed',
+          status: progress >= 100 ? 'completed' : 'running'
+        });
+
+        // Avanzar fase
+        if (progress > (currentPhaseIndex + 1) * 20 && currentPhaseIndex < phases.length - 1) {
+          currentPhaseIndex++;
+        }
+      };
+
+      scanPollingInterval = setInterval(simulateProgress, 2000);
+    }
+
+    function updateProgressUI(progressData) {
+      const progressBar = document.getElementById('progressBar');
+      const progressPercent = document.getElementById('progressPercent');
+      const currentPhase = document.getElementById('currentPhase');
+      const scanStatus = document.getElementById('scanStatus');
+
+      progressBar.style.width = progressData.progress + '%';
+      progressPercent.textContent = Math.round(progressData.progress) + '%';
+      
+      // Mapear fases a español
+      const phaseNames = {
+        'reconnaissance': 'Reconocimiento inicial',
+        'tools': 'Escaneo con herramientas',
+        'custom': 'Análisis personalizado',
+        'credentials': 'Búsqueda de credenciales',
+        'analysis': 'Análisis de vulnerabilidades',
+        'completed': 'Completado'
+      };
+
+      currentPhase.textContent = phaseNames[progressData.current_phase] || progressData.current_phase;
+      scanStatus.textContent = progressData.status === 'completed' ? 
+        'Análisis completado exitosamente' : 
+        `En progreso: ${phaseNames[progressData.current_phase] || progressData.current_phase}`;
+
+      // Actualizar indicadores de fase
+      const phaseElement = document.getElementById(`phase-${progressData.current_phase}`);
+      if (phaseElement) {
+        // Marcar fase actual como activa
+        phaseElement.querySelector('div').className = 'w-4 h-4 rounded-full bg-blue-500';
+        
+        // Marcar fases anteriores como completadas
+        const phases = ['reconnaissance', 'tools', 'custom', 'credentials', 'analysis'];
+        const currentIndex = phases.indexOf(progressData.current_phase);
+        
+        for (let i = 0; i < currentIndex; i++) {
+          const prevPhase = document.getElementById(`phase-${phases[i]}`);
+          if (prevPhase) {
+            prevPhase.querySelector('div').className = 'w-4 h-4 rounded-full bg-green-500';
+          }
+        }
+      }
+    }
+
+    async function completeScan() {
+      try {
+        // Generar datos simulados para demostración
+        const mockResults = generateMockResults();
+        currentScanId = mockResults.scan_id;
+        
+        displayResults(mockResults);
+        showNotification('Completado', 'Análisis profundo finalizado exitosamente', 'success');
+        
+        // Recargar historial
+        loadScanHistory();
+
+      } catch (error) {
+        console.error('Error completando escaneo:', error);
+        showNotification('Error', 'Error procesando resultados', 'error');
+      } finally {
+        resetScanUI();
+      }
+    }
+
+    function generateMockResults() {
+      const selectedTools = [];
+      document.querySelectorAll('input[type="checkbox"]:checked').forEach(checkbox => {
+        selectedTools.push(checkbox.value);
+      });
+
+      return {
+        scan_id: 'scan_' + Date.now(),
+        target_url: targetUrlInput.value,
+        scan_date: new Date().toISOString(),
+        status: 'completed',
+        selected_tools: selectedTools,
+        statistics: {
+          total_vulnerabilities: Math.floor(Math.random() * 15) + 5,
+          critical_issues: Math.floor(Math.random() * 3),
+          credentials_found: Math.floor(Math.random() * 2),
+          directories_discovered: Math.floor(Math.random() * 10) + 3,
+          files_discovered: Math.floor(Math.random() * 8) + 2,
+          subdomains_found: Math.floor(Math.random() * 5),
+          open_ports: Math.floor(Math.random() * 3) + 2
+        },
+        vulnerability_summary: {
+          critical_vulnerabilities: Math.floor(Math.random() * 2),
+          high_vulnerabilities: Math.floor(Math.random() * 4) + 1,
+          medium_vulnerabilities: Math.floor(Math.random() * 6) + 2,
+          low_vulnerabilities: Math.floor(Math.random() * 8) + 3
+        },
+        recommendations: [
+          'Implementar validación de entrada robusta en todos los formularios',
+          'Configurar headers de seguridad HTTP apropiados',
+          'Actualizar componentes y librerías a las últimas versiones',
+          'Implementar autenticación de dos factores',
+          'Configurar HTTPS con certificados válidos',
+          'Establecer políticas de Content Security Policy (CSP)',
+          'Implementar logging y monitoreo de seguridad',
+          'Realizar escaneos de seguridad regulares'
+        ],
+        discovered_assets: {
+          directories: ['admin', 'backup', 'config'],
+          files: ['robots.txt', 'sitemap.xml'],
+          technologies: ['Apache', 'PHP', 'MySQL']
+        },
+        security_findings: {
+          credentials: [],
+          misconfigurations: ['Missing security headers'],
+          exposed_files: ['Configuration file accessible'],
+          vulnerable_components: ['Outdated framework version']
+        }
+      };
+    }
+
+    function displayResults(results) {
+      // Mostrar secciones de resultados
+      resultsOverview.classList.remove('hidden');
+      recommendationsSection.classList.remove('hidden');
+      chartsSection.classList.remove('hidden');
+      
+      // Habilitar botones
+      viewResultsBtn.disabled = false;
+      downloadPdfBtn.disabled = false;
+
+      // Actualizar URL escaneada
+      document.getElementById('scannedUrl').textContent = results.target_url;
+
+      // Actualizar métricas
+      document.getElementById('totalVulns').textContent = results.statistics.total_vulnerabilities;
+      document.getElementById('criticalIssues').textContent = results.statistics.critical_issues;
+      document.getElementById('credentialsFound').textContent = results.statistics.credentials_found;
+      document.getElementById('assetsFound').textContent = 
+        results.statistics.directories_discovered + results.statistics.files_discovered;
+
+      // Mostrar resultados por herramienta
+      displayToolsResults(results);
+
+      // Mostrar recomendaciones
+      displayRecommendations(results.recommendations);
+
+      // Crear gráficos
+      createCharts(results);
+    }
+
+    function displayToolsResults(results) {
+      const toolsResults = document.getElementById('toolsResults');
+      toolsResults.innerHTML = '';
+
+      results.selected_tools.forEach(tool => {
+        const toolDiv = document.createElement('div');
+        toolDiv.className = 'border border-gray-200 rounded-lg p-4';
+        
+        const toolNames = {
+          'wapiti3': 'Wapiti3 - Vulnerabilidades Web',
+          'nikto': 'Nikto - Configuración del Servidor',
+          'custom': 'Análisis Personalizado'
+        };
+
+        toolDiv.innerHTML = `
+          <h4 class="font-medium text-gray-800 mb-2">
+            <i class="fas fa-tools mr-2 text-blue-600"></i>${toolNames[tool] || tool}
+          </h4>
+          <div class="text-sm text-gray-600">
+            ${getToolSummary(tool, results)}
+          </div>
+        `;
+        
+        toolsResults.appendChild(toolDiv);
+      });
+    }
+
+    function getToolSummary(tool, results) {
+      switch(tool) {
+        case 'wapiti3':
+          return `
+            <div class="flex justify-between">
+              <span>Vulnerabilidades detectadas:</span>
+              <span class="font-medium">${results.vulnerability_summary.critical_vulnerabilities + results.vulnerability_summary.high_vulnerabilities}</span>
+            </div>
+            <div class="text-xs text-gray-500 mt-1">
+              XSS, SQL Injection, y otras vulnerabilidades web
+            </div>
+          `;
+        case 'nikto':
+          return `
+            <div class="flex justify-between">
+              <span>Problemas de configuración:</span>
+              <span class="font-medium">${results.security_findings.misconfigurations.length}</span>
+            </div>
+            <div class="text-xs text-gray-500 mt-1">
+              Headers de seguridad, archivos expuestos
+            </div>
+          `;
+        case 'custom':
+          return `
+            <div class="flex justify-between">
+              <span>Assets descubiertos:</span>
+              <span class="font-medium">${results.statistics.directories_discovered + results.statistics.files_discovered}</span>
+            </div>
+            <div class="text-xs text-gray-500 mt-1">
+              Directorios: ${results.statistics.directories_discovered}, Archivos: ${results.statistics.files_discovered}
+            </div>
+          `;
+        default:
+          return 'Análisis completado';
+      }
+    }
+
+    function displayRecommendations(recommendations) {
+      const recommendationsList = document.getElementById('recommendationsList');
+      recommendationsList.innerHTML = '';
+
+      recommendations.slice(0, 6).forEach((rec, index) => {
+        const recDiv = document.createElement('div');
+        recDiv.className = 'flex items-start space-x-3 p-3 bg-yellow-50 rounded-lg';
+        recDiv.innerHTML = `
+          <div class="flex-shrink-0 w-6 h-6 bg-yellow-500 text-white rounded-full flex items-center justify-center text-xs font-bold">
+            ${index + 1}
+          </div>
+          <div class="text-sm text-gray-700">${rec}</div>
+        `;
+        recommendationsList.appendChild(recDiv);
+      });
+    }
+
+    function createCharts(results) {
+      // Destruir gráficos existentes
+      Object.values(charts).forEach(chart => chart.destroy());
+      charts = {};
+
+      // Gráfico de severidad
+      const severityCtx = document.getElementById('severityChart').getContext('2d');
+      charts.severity = new Chart(severityCtx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Crítica', 'Alta', 'Media', 'Baja'],
+          datasets: [{
+            data: [
+              results.vulnerability_summary.critical_vulnerabilities,
+              results.vulnerability_summary.high_vulnerabilities,
+              results.vulnerability_summary.medium_vulnerabilities,
+              results.vulnerability_summary.low_vulnerabilities
+            ],
+            backgroundColor: ['#dc2626', '#ea580c', '#d97706', '#65a30d'],
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'bottom' }
+          }
+        }
+      });
+
+      // Gráfico de assets
+      const assetsCtx = document.getElementById('assetsChart').getContext('2d');
+      charts.assets = new Chart(assetsCtx, {
+        type: 'bar',
+        data: {
+          labels: ['Directorios', 'Archivos', 'Subdominios', 'Puertos'],
+          datasets: [{
+            label: 'Descubiertos',
+            data: [
+              results.statistics.directories_discovered,
+              results.statistics.files_discovered,
+              results.statistics.subdomains_found,
+              results.statistics.open_ports
+            ],
+            backgroundColor: '#3b82f6',
+            borderColor: '#1d4ed8',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: { stepSize: 1 }
+            }
+          },
+          plugins: {
+            legend: { display: false }
+          }
+        }
+      });
+    }
+
+    async function viewDetailedResults() {
+      if (!currentScanId) return;
+
+      try {
+        // Por ahora mostrar modal con información básica
+        const modalContent = document.getElementById('modalContent');
+        modalContent.innerHTML = `
+          <div class="space-y-6">
+            <div>
+              <h4 class="font-bold text-lg mb-3">Información del Escaneo</h4>
+              <div class="grid grid-cols-2 gap-4 text-sm">
+                <div><strong>ID:</strong> ${currentScanId}</div>
+                <div><strong>URL:</strong> ${targetUrlInput.value}</div>
+                <div><strong>Fecha:</strong> ${new Date().toLocaleString()}</div>
+                <div><strong>Estado:</strong> Completado</div>
+              </div>
+            </div>
+            
+            <div>
+              <h4 class="font-bold text-lg mb-3">Detalles Técnicos</h4>
+              <p class="text-sm text-gray-600">
+                Los detalles completos del análisis incluyen información sobre vulnerabilidades 
+                detectadas, configuraciones incorrectas, archivos expuestos y recomendaciones 
+                específicas de seguridad.
+              </p>
+            </div>
+          </div>
+        `;
+        
+        document.getElementById('detailsModal').classList.remove('hidden');
+
+      } catch (error) {
+        console.error('Error:', error);
+        showNotification('Error', 'No se pudieron cargar los detalles', 'error');
+      }
+    }
+
+    async function downloadPDF() {
+      if (!currentScanId) return;
+
+      try {
+        showNotification('Info', 'Generando reporte PDF...', 'info');
+        
+        // Simular descarga
+        setTimeout(() => {
+          const link = document.createElement('a');
+          link.href = '#'; // En implementación real: URL del PDF
+          link.download = `security_report_${new Date().getTime()}.pdf`;
+          
+          showNotification('Éxito', 'Reporte PDF generado (simulado)', 'success');
+        }, 2000);
+
+      } catch (error) {
+        console.error('Error:', error);
+        showNotification('Error', 'No se pudo generar el PDF', 'error');
+      }
+    }
+
+    function closeModal() {
+      document.getElementById('detailsModal').classList.add('hidden');
+    }
+
+    function resetScanUI() {
+      startScanBtn.disabled = false;
+      startScanBtn.innerHTML = '<i class="fas fa-play mr-2"></i>Iniciar Análisis Profundo';
+      
+      if (scanPollingInterval) {
+        clearInterval(scanPollingInterval);
+        scanPollingInterval = null;
+      }
+    }
+
+    async function loadScanHistory() {
+      // Simular historial de escaneos
+      const scanHistoryList = document.getElementById('scanHistoryList');
+      
+      // En implementación real, cargar desde la API
+      const mockHistory = [
+        {
+          id: 'scan_1',
+          target: 'https://example.com',
+          date: new Date(Date.now() - 86400000).toLocaleDateString(),
+          status: 'completed',
+          vulnerabilities: 8,
+          critical: 1
+        },
+        {
+          id: 'scan_2', 
+          target: 'https://test.com',
+          date: new Date(Date.now() - 172800000).toLocaleDateString(),
+          status: 'completed',
+          vulnerabilities: 12,
+          critical: 2
+        }
+      ];
+
+      if (mockHistory.length === 0) return;
+
+      scanHistoryList.innerHTML = mockHistory.map(scan => `
+        <div class="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
+          <div class="flex justify-between items-start">
+            <div>
+              <div class="font-medium text-gray-800">${scan.target}</div>
+              <div class="text-sm text-gray-500">${scan.date}</div>
+            </div>
+            <div class="text-right">
+              <div class="text-sm">
+                <span class="text-red-600 font-medium">${scan.vulnerabilities}</span> vulnerabilidades
+              </div>
+              <div class="text-xs text-orange-600">${scan.critical} críticas</div>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function showNotification(title, message, type = 'info') {
+      const notification = document.createElement('div');
+      notification.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg max-w-sm transform transition-all duration-300 ${
+        type === 'success' ? 'bg-green-500' : 
+        type === 'error' ? 'bg-red-500' : 
+        type === 'warning' ? 'bg-yellow-500' : 'bg-blue-500'
+      } text-white`;
+      
+      notification.innerHTML = `
+        <div class="flex items-start">
+          <div class="flex-shrink-0">
+            <div class="text-lg">
+              ${type === 'success' ? '✅' : 
+                type === 'error' ? '❌' : 
+                type === 'warning' ? '⚠️' : 'ℹ️'}
+            </div>
+          </div>
+          <div class="ml-3 flex-1">
+            <div class="font-semibold">${title}</div>
+            <div class="text-sm mt-1">${message}</div>
+          </div>
+          <button onclick="this.parentElement.parentElement.remove()" class="ml-3 text-white hover:text-gray-200">
+            ×
+          </button>
+        </div>
+      `;
+      
+      document.body.appendChild(notification);
+      
+      // Auto-remover después de 5 segundos
+      setTimeout(() => {
+        if (notification.parentElement) {
+          notification.style.transform = 'translateX(100%)';
+          setTimeout(() => notification.remove(), 300);
+        }
+      }, 5000);
+    }
+  </script>
+</body>
+</html>

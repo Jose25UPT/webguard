@@ -3,44 +3,31 @@ import subprocess
 import glob
 import os
 import asyncio
+import json
+import time
 from datetime import datetime
 from pathlib import Path
+from loguru import logger
 
 RESULTS_DIR = Path(__file__).resolve().parent.parent.parent / "results"
 RESULTS_DIR.mkdir(parents=True, exist_ok=True)
 
 def cleanup_old_reports():
-    """Elimina todos los archivos de reporte existentes para mantener solo el más reciente"""
+    """Elimina reportes antiguos manteniendo solo los últimos 5"""
     try:
-        # Buscar todos los archivos JSON de reportes
         report_files = glob.glob(str(RESULTS_DIR / "scan_*.json"))
-        for file_path in report_files:
-            os.remove(file_path)
-            print(f"Eliminado archivo anterior: {file_path}")
+        if len(report_files) > 5:
+            # Ordenar por fecha de modificación y mantener solo los 5 más recientes
+            report_files.sort(key=os.path.getmtime)
+            for file_path in report_files[:-5]:
+                os.remove(file_path)
+                logger.info(f"Eliminado archivo antiguo: {file_path}")
     except Exception as e:
-        print(f"Error al limpiar archivos anteriores: {e}")
+        logger.error(f"Error al limpiar archivos: {e}")
 
-def get_output_path(tool: str, scan_id: str):
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    return RESULTS_DIR / f"scan_{tool}_{scan_id}_{timestamp}.json"
-
-def run_tool(tool, cmd, scan_id):
-    output_file = get_output_path(tool, scan_id)
-    try:
-        res = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
-        return {
-            "scan_id": scan_id,
-            "tool": tool,
-            "status": "success" if res.returncode == 0 else "error",
-            "output_file": str(output_file),
-            "returncode": res.returncode,
-            "stdout": res.stdout,
-            "stderr": res.stderr
-        }
-    except subprocess.TimeoutExpired:
-        return {"scan_id": scan_id, "tool": tool, "status": "timeout", "output_file": None}
-    except Exception as e:
-        return {"scan_id": scan_id, "tool": tool, "status": "exception", "error": str(e)}
+def get_scan_id():
+    """Generar ID único para el escaneo"""
+    return datetime.now().strftime("%Y%m%d_%H%M%S") + "_" + str(uuid.uuid4().hex)[:8]
 
 async def scan_target_async(target_url: str):
     """Escaneo asíncrono usando Wapiti y Nikto"""

@@ -17,6 +17,16 @@ class OpenSourceToolsService:
     
     def __init__(self):
         self.tools_config = {
+            'wapiti3': {
+                'name': 'Wapiti3',
+                'command': 'wapiti',
+                'description': 'Web Application Vulnerability Scanner'
+            },
+            'nikto': {
+                'name': 'Nikto',
+                'command': 'nikto',
+                'description': 'Web Server Scanner'
+            },
             'zap': {
                 'name': 'OWASP ZAP',
                 'command': 'zap-cli',
@@ -46,6 +56,16 @@ class OpenSourceToolsService:
                 'name': 'SSLyze',
                 'command': 'sslyze',
                 'description': 'SSL/TLS Configuration Analyzer'
+            },
+            'testssl': {
+                'name': 'testssl.sh',
+                'command': 'testssl.sh',
+                'description': 'Testing TLS/SSL encryption'
+            },
+            'whatweb': {
+                'name': 'WhatWeb',
+                'command': 'whatweb',
+                'description': 'Web Application Fingerprinter'
             }
         }
         
@@ -61,9 +81,16 @@ class OpenSourceToolsService:
             # Verificar herramientas disponibles
             available_tools = await self._check_available_tools()
             
-            # Ejecutar herramientas en paralelo
+            # Ejecutar herramientas priorizando Wapiti y Nikto
             scan_tasks = []
             
+            # Prioridad 1: Wapiti (siempre intentar)
+            scan_tasks.append(self._run_enhanced_wapiti_scan(target_url, scan_id))
+            
+            # Prioridad 2: Nikto (siempre intentar)
+            scan_tasks.append(self._run_enhanced_nikto_scan(target_url, scan_id))
+            
+            # Herramientas adicionales si están disponibles
             if 'zap' in available_tools:
                 scan_tasks.append(self._run_zap_scan(target_url, scan_id))
             
@@ -80,10 +107,7 @@ class OpenSourceToolsService:
                 scan_tasks.append(self._run_sslyze_scan(target_url, scan_id))
             
             # Ejecutar todas las herramientas
-            if scan_tasks:
-                results = await asyncio.gather(*scan_tasks, return_exceptions=True)
-            else:
-                results = []
+            results = await asyncio.gather(*scan_tasks, return_exceptions=True)
             
             # Compilar resultados
             compiled_results = {
@@ -93,15 +117,20 @@ class OpenSourceToolsService:
                 'available_tools': available_tools,
                 'tools_results': {},
                 'summary': {},
-                'recommendations': []
+                'recommendations': [],
+                'json_reports': {}
             }
             
             # Procesar resultados de cada herramienta
-            tool_names = ['zap', 'nmap', 'sqlmap', 'dirb', 'sslyze']
+            tool_names = ['wapiti', 'nikto', 'zap', 'nmap', 'sqlmap', 'dirb', 'sslyze']
             for i, result in enumerate(results):
                 if i < len(tool_names) and not isinstance(result, Exception):
                     tool_name = tool_names[i]
                     compiled_results['tools_results'][tool_name] = result
+                    
+                    # Guardar ubicación de archivos JSON si existen
+                    if 'json_file' in result:
+                        compiled_results['json_reports'][tool_name] = result['json_file']
             
             # Generar resumen y recomendaciones
             compiled_results['summary'] = self._generate_summary(compiled_results['tools_results'])
@@ -307,6 +336,400 @@ class OpenSourceToolsService:
         except Exception as e:
             logger.error(f"Error en escaneo DIRB: {e}")
             return self._simulate_dirb_results(target_url)
+    
+    async def _run_enhanced_wapiti_scan(self, target_url: str, scan_id: str) -> Dict:
+        """Ejecutar escaneo mejorado con Wapiti con generación de JSON"""
+        try:
+            logger.info(f"Iniciando escaneo Wapiti mejorado para {target_url}")
+            
+            # Crear directorio específico para Wapiti
+            wapiti_dir = self.results_dir / f"wapiti_{scan_id}"
+            wapiti_dir.mkdir(exist_ok=True)
+            
+            json_file = wapiti_dir / "report.json"
+            html_file = wapiti_dir / "report.html"
+            txt_file = wapiti_dir / "report.txt"
+            
+            # Comando Wapiti con opciones robustas
+            cmd = [
+                'wapiti',
+                '-u', target_url,
+                '--scope', 'domain',  # Escanear todo el dominio
+                '--flush-attacks',    # Limpiar ataques anteriores
+                '--flush-session',    # Limpiar sesión anterior
+                '--max-depth', '3',   # Profundidad máxima
+                '--max-links-per-page', '50',
+                '--max-files-per-dir', '50',
+                '--timeout', '30',
+                '--verify-ssl', '0',  # No verificar SSL para pruebas
+                '--level', '2',       # Nivel de ataque medio-alto
+                '--modules', 'backup,brute_login_form,buster,cookieflags,csrf,csp,exec,file,htaccess,http_headers,lfi,nikto,permanentxss,redirect,shellshock,sql,ssrf,xss,xxe',
+                '-f', 'json',
+                '-o', str(json_file)
+            ]
+            
+            # Generar también reportes en otros formatos
+            html_cmd = cmd[:-4] + ['-f', 'html', '-o', str(html_file)]
+            txt_cmd = cmd[:-4] + ['-f', 'txt', '-o', str(txt_file)]
+            
+            try:
+                # Ejecutar escaneo principal con JSON
+                logger.info(f"Ejecutando Wapiti: {' '.join(cmd)}")
+                process = await asyncio.create_subprocess_exec(
+                    *cmd,
+                    stdout=asyncio.subprocess.PIPE,
+                    stderr=asyncio.subprocess.PIPE,
+                    cwd=str(wapiti_dir)
+                )
+                
+                stdout, stderr = await asyncio.wait_for(
+                    process.communicate(), timeout=600  # 10 minutos timeout
+                )
+                
+                if process.returncode == 0 and json_file.exists():
+                    logger.info(f"✅ Wapiti completado exitosamente. Archivo JSON: {json_file}")
+                    
+                    # Generar reportes adicionales en paralelo
+                    await asyncio.gather(
+                        self._execute_wapiti_format(html_cmd, wapiti_dir),
+                        self._execute_wapiti_format(txt_cmd, wapiti_dir),
+                        return_exceptions=True
+                    )
+                    
+                    return await self._process_wapiti_json_results(json_file, scan_id)
+                else:
+                    logger.warning(f"⚠️ Wapiti falló o no generó archivo JSON. ReturnCode: {process.returncode}")
+                    if stderr:
+                        logger.warning(f"Wapiti stderr: {stderr.decode()[:500]}")
+                    return self._simulate_wapiti_results(target_url, scan_id)
+                    
+            except asyncio.TimeoutError:
+                logger.warning("⚠️ Wapiti timeout - usando resultados simulados")
+                return self._simulate_wapiti_results(target_url, scan_id)
+                
+        except Exception as e:
+            logger.error(f"❌ Error en escaneo Wapiti: {e}")
+            return self._simulate_wapiti_results(target_url, scan_id)
+    
+    async def _run_enhanced_nikto_scan(self, target_url: str, scan_id: str) -> Dict:
+        """Ejecutar escaneo mejorado con Nikto con generación de archivos"""
+        try:
+            logger.info(f"Iniciando escaneo Nikto mejorado para {target_url}")
+            
+            # Crear directorio específico para Nikto
+            nikto_dir = self.results_dir / f"nikto_{scan_id}"
+            nikto_dir.mkdir(exist_ok=True)
+            
+            json_file = nikto_dir / "nikto_report.json"
+            txt_file = nikto_dir / "nikto_report.txt"
+            csv_file = nikto_dir / "nikto_report.csv"
+            
+            # Comando Nikto con opciones robustas
+            base_cmd = [
+                'nikto',
+                '-h', target_url,
+                '-timeout', '30',
+                '-maxtime', '600',  # 10 minutos máximo
+                '-Tuning', '123456789a',  # Todas las categorías
+                '-evasion', '1',  # Evasión básica
+                '-useragent', 'Mozilla/5.0 (compatible; SecurityScanner/1.0)',
+                '-C', 'all',  # Todas las verificaciones
+                '-ssl'  # Forzar SSL si es necesario
+            ]
+            
+            # Comandos para diferentes formatos
+            json_cmd = base_cmd + ['-Format', 'json', '-output', str(json_file)]
+            txt_cmd = base_cmd + ['-Format', 'txt', '-output', str(txt_file)]
+            csv_cmd = base_cmd + ['-Format', 'csv', '-output', str(csv_file)]
+            
+            try:
+                # Ejecutar escaneo principal con JSON
+                logger.info(f"Ejecutando Nikto: {' '.join(json_cmd)}")
+                process = await asyncio.create_subprocess_exec(
+                    *json_cmd,
+                    stdout=asyncio.subprocess.PIPE,
+                    stderr=asyncio.subprocess.PIPE,
+                    cwd=str(nikto_dir)
+                )
+                
+                stdout, stderr = await asyncio.wait_for(
+                    process.communicate(), timeout=700  # 11+ minutos timeout
+                )
+                
+                # Nikto puede retornar 0 o 1 dependiendo de si encuentra vulnerabilidades
+                if process.returncode in [0, 1] and json_file.exists():
+                    logger.info(f"✅ Nikto completado. Archivo JSON: {json_file}")
+                    
+                    # Generar reportes adicionales en paralelo
+                    await asyncio.gather(
+                        self._execute_nikto_format(txt_cmd, nikto_dir),
+                        self._execute_nikto_format(csv_cmd, nikto_dir),
+                        return_exceptions=True
+                    )
+                    
+                    return await self._process_nikto_json_results(json_file, scan_id)
+                else:
+                    logger.warning(f"⚠️ Nikto falló o no generó archivo JSON. ReturnCode: {process.returncode}")
+                    if stderr:
+                        logger.warning(f"Nikto stderr: {stderr.decode()[:500]}")
+                    return self._simulate_nikto_results(target_url, scan_id)
+                    
+            except asyncio.TimeoutError:
+                logger.warning("⚠️ Nikto timeout - usando resultados simulados")
+                return self._simulate_nikto_results(target_url, scan_id)
+                
+        except Exception as e:
+            logger.error(f"❌ Error en escaneo Nikto: {e}")
+            return self._simulate_nikto_results(target_url, scan_id)
+    
+    async def _execute_wapiti_format(self, cmd: List[str], work_dir: Path):
+        """Ejecutar comando Wapiti para formato específico"""
+        try:
+            process = await asyncio.create_subprocess_exec(
+                *cmd,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
+                cwd=str(work_dir)
+            )
+            await asyncio.wait_for(process.communicate(), timeout=300)
+        except Exception as e:
+            logger.warning(f"Error generando formato adicional Wapiti: {e}")
+    
+    async def _execute_nikto_format(self, cmd: List[str], work_dir: Path):
+        """Ejecutar comando Nikto para formato específico"""
+        try:
+            process = await asyncio.create_subprocess_exec(
+                *cmd,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
+                cwd=str(work_dir)
+            )
+            await asyncio.wait_for(process.communicate(), timeout=300)
+        except Exception as e:
+            logger.warning(f"Error generando formato adicional Nikto: {e}")
+    
+    async def _process_wapiti_json_results(self, json_file: Path, scan_id: str) -> Dict:
+        """Procesar resultados JSON de Wapiti"""
+        try:
+            with open(json_file, 'r', encoding='utf-8') as f:
+                wapiti_data = json.load(f)
+            
+            vulnerabilities = []
+            statistics = {
+                'total_vulnerabilities': 0,
+                'by_severity': {'High': 0, 'Medium': 0, 'Low': 0},
+                'by_category': {}
+            }
+            
+            # Procesar vulnerabilidades
+            if 'vulnerabilities' in wapiti_data:
+                for category, vulns in wapiti_data['vulnerabilities'].items():
+                    if isinstance(vulns, list):
+                        statistics['by_category'][category] = len(vulns)
+                        statistics['total_vulnerabilities'] += len(vulns)
+                        
+                        for vuln in vulns:
+                            severity = self._map_wapiti_severity(vuln.get('level', 1))
+                            statistics['by_severity'][severity] += 1
+                            
+                            vulnerabilities.append({
+                                'category': category,
+                                'info': vuln.get('info', ''),
+                                'level': vuln.get('level', 1),
+                                'severity': severity,
+                                'method': vuln.get('method', 'GET'),
+                                'path': vuln.get('path', '/'),
+                                'parameter': vuln.get('parameter', ''),
+                                'wstg': vuln.get('wstg', []),
+                                'references': vuln.get('references', [])
+                            })
+            
+            # Información de clasificación
+            classifications = wapiti_data.get('classifications', {})
+            
+            return {
+                'status': 'completed',
+                'tool': 'Wapiti3 Enhanced',
+                'scan_id': scan_id,
+                'json_file': str(json_file),
+                'vulnerabilities': vulnerabilities,
+                'statistics': statistics,
+                'classifications': classifications,
+                'infos': wapiti_data.get('infos', {}),
+                'generated_at': datetime.now().isoformat()
+            }
+            
+        except Exception as e:
+            logger.error(f"Error procesando JSON de Wapiti: {e}")
+            return self._simulate_wapiti_results("unknown", scan_id)
+    
+    async def _process_nikto_json_results(self, json_file: Path, scan_id: str) -> Dict:
+        """Procesar resultados JSON de Nikto"""
+        try:
+            with open(json_file, 'r', encoding='utf-8') as f:
+                content = f.read()
+                # Nikto a veces genera múltiples objetos JSON, tomar el último
+                json_objects = [line for line in content.strip().split('\n') if line.strip()]
+                if json_objects:
+                    nikto_data = json.loads(json_objects[-1])
+                else:
+                    raise ValueError("No se encontraron datos JSON válidos")
+            
+            vulnerabilities = []
+            statistics = {
+                'total_vulnerabilities': 0,
+                'by_severity': {'High': 0, 'Medium': 0, 'Low': 0},
+                'by_category': {}
+            }
+            
+            # Procesar vulnerabilidades de Nikto
+            if 'vulnerabilities' in nikto_data:
+                for vuln in nikto_data['vulnerabilities']:
+                    # Clasificar por tipo
+                    vuln_type = vuln.get('id', '').split('-')[0] if vuln.get('id') else 'general'
+                    statistics['by_category'][vuln_type] = statistics['by_category'].get(vuln_type, 0) + 1
+                    statistics['total_vulnerabilities'] += 1
+                    
+                    # Determinar severidad basada en OSVDB ID o descripción
+                    severity = self._determine_nikto_severity(vuln)
+                    statistics['by_severity'][severity] += 1
+                    
+                    vulnerabilities.append({
+                        'id': vuln.get('id', ''),
+                        'osvdb': vuln.get('osvdb', ''),
+                        'url': vuln.get('url', ''),
+                        'msg': vuln.get('msg', ''),
+                        'method': vuln.get('method', 'GET'),
+                        'severity': severity,
+                        'category': vuln_type
+                    })
+            
+            return {
+                'status': 'completed',
+                'tool': 'Nikto Enhanced',
+                'scan_id': scan_id,
+                'json_file': str(json_file),
+                'vulnerabilities': vulnerabilities,
+                'statistics': statistics,
+                'host_info': nikto_data.get('host', {}),
+                'scan_details': nikto_data.get('scan_details', {}),
+                'generated_at': datetime.now().isoformat()
+            }
+            
+        except Exception as e:
+            logger.error(f"Error procesando JSON de Nikto: {e}")
+            return self._simulate_nikto_results("unknown", scan_id)
+    
+    def _map_wapiti_severity(self, level: int) -> str:
+        """Mapear nivel numérico de Wapiti a severidad"""
+        if level >= 3:
+            return 'High'
+        elif level == 2:
+            return 'Medium'
+        else:
+            return 'Low'
+    
+    def _determine_nikto_severity(self, vuln: Dict) -> str:
+        """Determinar severidad de vulnerabilidad Nikto"""
+        msg = vuln.get('msg', '').lower()
+        osvdb = vuln.get('osvdb', '')
+        
+        # Palabras clave que indican alta severidad
+        high_severity_keywords = [
+            'sql injection', 'command injection', 'file inclusion',
+            'directory traversal', 'remote code execution', 'backdoor',
+            'shell', 'exploit', 'vulnerable'
+        ]
+        
+        # Palabras clave que indican severidad media
+        medium_severity_keywords = [
+            'cross-site scripting', 'xss', 'csrf', 'authentication',
+            'password', 'admin', 'config', 'disclosure'
+        ]
+        
+        for keyword in high_severity_keywords:
+            if keyword in msg:
+                return 'High'
+        
+        for keyword in medium_severity_keywords:
+            if keyword in msg:
+                return 'Medium'
+        
+        return 'Low'
+    
+    def _simulate_wapiti_results(self, target_url: str, scan_id: str) -> Dict:
+        """Simular resultados de Wapiti cuando no está disponible"""
+        return {
+            'status': 'simulated',
+            'tool': 'Wapiti3 (Simulado)',
+            'scan_id': scan_id,
+            'note': 'Herramienta no disponible - resultados simulados',
+            'vulnerabilities': [
+                {
+                    'category': 'Cross Site Scripting',
+                    'info': 'Posible vulnerabilidad XSS en parámetro de consulta',
+                    'level': 2,
+                    'severity': 'Medium',
+                    'method': 'GET',
+                    'path': '/',
+                    'parameter': 'q',
+                    'wstg': ['WSTG-INPV-01'],
+                    'references': []
+                },
+                {
+                    'category': 'SQL Injection',
+                    'info': 'Posible inyección SQL en formulario de login',
+                    'level': 3,
+                    'severity': 'High',
+                    'method': 'POST',
+                    'path': '/login',
+                    'parameter': 'username',
+                    'wstg': ['WSTG-INPV-05'],
+                    'references': []
+                }
+            ],
+            'statistics': {
+                'total_vulnerabilities': 2,
+                'by_severity': {'High': 1, 'Medium': 1, 'Low': 0},
+                'by_category': {'Cross Site Scripting': 1, 'SQL Injection': 1}
+            },
+            'generated_at': datetime.now().isoformat()
+        }
+    
+    def _simulate_nikto_results(self, target_url: str, scan_id: str) -> Dict:
+        """Simular resultados de Nikto cuando no está disponible"""
+        return {
+            'status': 'simulated',
+            'tool': 'Nikto (Simulado)',
+            'scan_id': scan_id,
+            'note': 'Herramienta no disponible - resultados simulados',
+            'vulnerabilities': [
+                {
+                    'id': 'OSVDB-3233',
+                    'osvdb': '3233',
+                    'url': f'{target_url}/admin/',
+                    'msg': 'Admin directory found. Directory indexing may be possible.',
+                    'method': 'GET',
+                    'severity': 'Medium',
+                    'category': 'directory'
+                },
+                {
+                    'id': 'OSVDB-3092',
+                    'osvdb': '3092',
+                    'url': f'{target_url}/test.php',
+                    'msg': 'Test file found. This may contain sensitive information.',
+                    'method': 'GET',
+                    'severity': 'Low',
+                    'category': 'file'
+                }
+            ],
+            'statistics': {
+                'total_vulnerabilities': 2,
+                'by_severity': {'High': 0, 'Medium': 1, 'Low': 1},
+                'by_category': {'directory': 1, 'file': 1}
+            },
+            'generated_at': datetime.now().isoformat()
+        }
     
     async def _run_sslyze_scan(self, target_url: str, scan_id: str) -> Dict:
         """Ejecutar análisis SSL con SSLyze"""
