@@ -19,9 +19,9 @@ class RealSecurityAPIs:
     """Servicio de APIs reales de seguridad para auditoría y pentesting"""
     
     def __init__(self):
-        self.virustotal_api_key = os.getenv('VIRUSTOTAL_API_KEY')
-        self.shodan_api_key = os.getenv('SHODAN_API_KEY')
-        self.abuseipdb_api_key = os.getenv('ABUSEIPDB_API_KEY')
+        self.virustotal_api_key = os.getenv('9dcc70ea07779195784e2c3597f0862689009c34380895b98ac72322363e90b0')
+        self.shodan_api_key = os.getenv('8UewYBmqOs8GPLOcCT6nJGdVD55raLUB')
+        self.abuseipdb_api_key = os.getenv('a8ffd9ce7fe9d9e1de826e48e898f6942a6c064a92050fec4b060ba0ec71de9cf8feaa124ea4add5')
         
         # URLs de APIs
         self.vt_url = "https://www.virustotal.com/vtapi/v2/"

@@ -51,12 +51,13 @@ async def scan_target_async(target_url: str):
                 "wapiti", "-u", target_url,
                 "-f", "json",
                 "-o", str(get_output_path("wapiti", str(uuid.uuid4().hex))),
-                "--max-depth", "2",
-                "--max-files-per-dir", "50",
-                "--max-links-per-page", "100",
-                "--timeout", "10",
+                "--max-depth", "1",
+                "--max-files-per-dir", "20",
+                "--max-links-per-page", "50",
+                "--timeout", "5",
                 "--verify-ssl", "0",
-                "--max-scan-time", "300"
+                "--max-scan-time", "180",
+                "-v", "1"
             ]
         },
         {

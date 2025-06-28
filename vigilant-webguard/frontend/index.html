@@ -405,6 +405,102 @@
       }, 5000);
     }
 
+    // Registrar Service Worker
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', async () => {
+        try {
+          const registration = await navigator.serviceWorker.register('/sw.js');
+          console.log('Service Worker registrado exitosamente');
+          
+          // Solicitar permisos de notificación
+          if ('Notification' in window && Notification.permission === 'default') {
+            await Notification.requestPermission();
+          }
+        } catch (error) {
+          console.error('Error registrando Service Worker:', error);
+        }
+      });
+      
+      // Escuchar mensajes del Service Worker
+      navigator.serviceWorker.addEventListener('message', event => {
+        const { type, data } = event.data;
+        
+        switch (type) {
+          case 'SCAN_COMPLETED':
+            showInPageNotification('¡Escaneo Completado!', `El análisis ha finalizado exitosamente.`, 'success');
+            loadLastJson(); // Recargar datos
+            break;
+          case 'SCAN_ERROR':
+            showInPageNotification('Error en Escaneo', 'Hubo un problema durante el análisis.', 'error');
+            break;
+          case 'VIEW_REPORT':
+            loadLastJson(); // Mostrar el reporte
+            break;
+          case 'DOWNLOAD_PDF':
+            downloadPDF(); // Descargar PDF
+            break;
+        }
+      });
+    }
+    
+    // Función para notificaciones en la página
+    function showInPageNotification(title, message, type = 'info') {
+      const notification = document.createElement('div');
+      notification.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg max-w-sm transform transition-all duration-300 ${
+        type === 'success' ? 'bg-green-500' : 
+        type === 'error' ? 'bg-red-500' : 
+        type === 'warning' ? 'bg-yellow-500' : 'bg-blue-500'
+      } text-white`;
+      
+      notification.innerHTML = `
+        <div class="flex items-start">
+          <div class="flex-shrink-0">
+            <div class="text-lg">${
+              type === 'success' ? '✅' : 
+              type === 'error' ? '❌' : 
+              type === 'warning' ? '⚠️' : 'ℹ️'
+            }</div>
+          </div>
+          <div class="ml-3 flex-1">
+            <div class="font-semibold">${title}</div>
+            <div class="text-sm mt-1">${message}</div>
+          </div>
+          <button onclick="this.parentElement.parentElement.remove()" class="ml-3 text-white hover:text-gray-200">
+            ×
+          </button>
+        </div>
+      `;
+      
+      document.body.appendChild(notification);
+      
+      // Auto-remover después de 5 segundos
+      setTimeout(() => {
+        if (notification.parentElement) {
+          notification.style.transform = 'translateX(100%)';
+          setTimeout(() => notification.remove(), 300);
+        }
+      }, 5000);
+    }
+    
+    // Función para descargar PDF
+    async function downloadPDF() {
+      try {
+        const response = await fetch("/api/pentest/download-pdf");
+        if (!response.ok) throw new Error("No se pudo generar el PDF.");
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "reporte_seguridad.pdf";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(url);
+      } catch (e) {
+        showInPageNotification('Error', 'No se pudo descargar el PDF', 'error');
+      }
+    }
+    
     // Ejecutar al cargar
     window.onload = loadLastJson;
   </script>

@@ -71,8 +71,8 @@ class AdvancedPDFGenerator:
     <!-- Header -->
     <div class="header">
         <div class="logo">
-            <h1>🛡️ Vigilant WebGuard</h1>
-            <h2>Reporte de Pentesting y Auditoría de Seguridad</h2>
+            <h1>Vigilant WebGuard</h1>
+            <h2>Reporte de Pentesting y Auditoria de Seguridad</h2>
         </div>
         <div class="report-info">
             <p><strong>URL Objetivo:</strong> {{ target_url }}</p>
