@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vigilant WebGuard - Dashboard</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gray-100 text-gray-800 font-sans">
+  <div class="flex h-screen">
+    <!-- Sidebar estilo Zabbix -->
+    <aside class="w-64 bg-white border-r shadow flex flex-col justify-between p-4">
+      <div>
+        <h1 class="text-xl font-bold text-indigo-600 mb-6">Vigilant WebGuard</h1>
+        <nav class="space-y-2 text-sm">
+          <a href="./dashboard.html" class="block py-1 text-gray-700 hover:text-indigo-600">🛡️ SOC Dashboard</a>
+          <a href="#" class="block py-1 text-gray-700 hover:text-indigo-600">📈 Reportes</a>
+          <a href="#" class="block py-1 text-gray-700 hover:text-indigo-600">🔍 Escaneo</a>
+        </nav>
+      </div>
+      <footer class="text-xs text-gray-400">
+        &copy; 2025 Vigilant WebGuard
+      </footer>
+    </aside>
+
+    <!-- Main content -->
+    <main class="flex-1 p-6 overflow-y-auto">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-semibold">Panel de Análisis</h2>
+        <button id="downloadPdfBtn"
+          class="text-sm bg-indigo-500 hover:bg-indigo-600 text-white px-3 py-1.5 rounded shadow-sm">
+          🗄 Descargar PDF
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Formulario -->
+        <div class="bg-white p-5 rounded-lg shadow">
+          <h3 class="text-md font-bold mb-2">Nuevo Escaneo</h3>
+          <input id="target" type="url" placeholder="https://ejemplo.com" class="w-full mb-3 p-2 border rounded" />
+          <select id="engine" class="w-full mb-3 p-2 border rounded">
+            <option value="wapiti">Wapiti</option>
+            <option value="nikto">Nikto</option>
+          </select>
+          <button id="scanButton"
+            class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">
+            ⚔ Iniciar Escaneo
+          </button>
+        </div>
+
+        <!-- Último Reporte Visual -->
+        <div id="reportVisual" class="bg-white p-5 rounded-lg shadow">
+          <h3 class="text-md font-bold mb-3">Resumen del Último Reporte</h3>
+          <div id="scanUrlDisplay" class="mb-3 p-2 bg-blue-50 rounded text-sm text-blue-800"></div>
+          <div id="reportIcons" class="space-y-3 text-sm text-gray-700">
+            <p class="text-gray-400 text-sm">⏳ Cargando resumen del reporte...</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sección de Estadísticas -->
+      <div id="statisticsSection" class="mt-6 hidden">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <!-- Gráfico de vulnerabilidades por severidad -->
+          <div class="bg-white p-5 rounded-lg shadow">
+            <h3 class="text-md font-bold mb-3">📊 Vulnerabilidades por Severidad</h3>
+            <div class="h-64">
+              <canvas id="severityChart"></canvas>
+            </div>
+          </div>
+          
+          <!-- Gráfico de vulnerabilidades por categoría -->
+          <div class="bg-white p-5 rounded-lg shadow">
+            <h3 class="text-md font-bold mb-3">📈 Vulnerabilidades por Categoría</h3>
+            <div class="h-64">
+              <canvas id="categoryChart"></canvas>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Estadísticas numéricas -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
+          <div class="bg-white p-4 rounded-lg shadow text-center">
+            <div id="totalVulns" class="text-2xl font-bold text-red-600">0</div>
+            <div class="text-sm text-gray-600">Total Vulnerabilidades</div>
+          </div>
+          <div class="bg-white p-4 rounded-lg shadow text-center">
+            <div id="highSeverity" class="text-2xl font-bold text-red-500">0</div>
+            <div class="text-sm text-gray-600">Severidad Alta</div>
+          </div>
+          <div class="bg-white p-4 rounded-lg shadow text-center">
+            <div id="mediumSeverity" class="text-2xl font-bold text-orange-500">0</div>
+            <div class="text-sm text-gray-600">Severidad Media</div>
+          </div>
+          <div class="bg-white p-4 rounded-lg shadow text-center">
+            <div id="lowSeverity" class="text-2xl font-bold text-yellow-500">0</div>
+            <div class="text-sm text-gray-600">Severidad Baja</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Barra de progreso -->
+      <div id="progressSection" class="mt-6 hidden">
+        <div class="bg-white p-4 rounded-lg shadow">
+          <h3 class="text-md font-semibold mb-3">Estado del Escaneo</h3>
+          <div id="scanStatus" class="text-sm text-gray-600 mb-2">Preparando escaneo...</div>
+          <div class="w-full bg-gray-200 rounded-full h-2.5">
+            <div id="progressBar" class="bg-blue-600 h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+          </div>
+          <div id="scanTarget" class="text-xs text-gray-500 mt-2"></div>
+        </div>
+      </div>
+
+      <div id="outputContainer" class="mt-6 hidden">
+        <h3 class="text-md font-medium mb-2">Raw Output:</h3>
+        <pre id="output" class="bg-gray-50 border p-4 rounded text-sm overflow-x-auto whitespace-pre-wrap"></pre>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const output = document.getElementById('output');
+    const container = document.getElementById('outputContainer');
+    const reportIcons = document.getElementById('reportIcons');
+
+    document.getElementById('scanButton').onclick = async () => {
+      const target = document.getElementById('target').value;
+      const engine = document.getElementById('engine').value;
+      
+      if (!target) {
+        alert('Por favor ingresa una URL para escanear');
+        return;
+      }
+
+      // Mostrar progreso
+      const progressSection = document.getElementById('progressSection');
+      const progressBar = document.getElementById('progressBar');
+      const scanStatus = document.getElementById('scanStatus');
+      const scanTarget = document.getElementById('scanTarget');
+      
+      progressSection.classList.remove('hidden');
+      container.classList.remove('hidden');
+      
+      scanTarget.textContent = `Escaneando: ${target}`;
+      scanStatus.textContent = 'Iniciando escaneo...';
+      progressBar.style.width = '10%';
+      
+      output.textContent = '⏳ Ejecutando escaneo...';
+
+      try {
+        const response = await fetch('/api/pentest/execute', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url: target })
+        });
+        const data = await response.json();
+        
+        // Simular progreso mientras esperamos el resultado
+        let progress = 10;
+        const scanId = data.scan_id;
+        
+        const progressInterval = setInterval(async () => {
+          progress += Math.random() * 15;
+          if (progress > 95) progress = 95;
+          
+          progressBar.style.width = progress + '%';
+          scanStatus.textContent = `Escaneando con ${engine}... ${Math.round(progress)}%`;
+          
+          // Verificar si el escaneo ha terminado
+          try {
+            const statusResponse = await fetch(`/api/scan/${scanId}`);
+            const statusData = await statusResponse.json();
+            
+            if (statusData.status === 'completed') {
+              clearInterval(progressInterval);
+              progressBar.style.width = '100%';
+              progressBar.style.backgroundColor = '#10b981'; // Verde
+              scanStatus.textContent = '✅ Escaneo completado exitosamente';
+              
+              // Mostrar notificación
+              showNotification('¡Escaneo completado!', `El análisis de ${target} ha finalizado.`);
+              
+              // Recargar el resumen
+              setTimeout(() => {
+                loadLastJson();
+                progressSection.classList.add('hidden');
+              }, 2000);
+            }
+          } catch (err) {
+            console.log('Aún escaneando...');
+          }
+        }, 2000);
+        
+        // Timeout de seguridad (5 minutos)
+        setTimeout(() => {
+          clearInterval(progressInterval);
+          if (progress < 100) {
+            progressBar.style.backgroundColor = '#ef4444'; // Rojo
+            scanStatus.textContent = '⚠️ Escaneo tardando más de lo esperado';
+            showNotification('Escaneo en progreso', 'El escaneo está tomando más tiempo del esperado.');
+          }
+        }, 300000);
+        
+        output.textContent = JSON.stringify(data, null, 2);
+        
+      } catch (err) {
+        progressBar.style.backgroundColor = '#ef4444'; // Rojo
+        scanStatus.textContent = '❌ Error en el escaneo';
+        output.textContent = "❌ " + err.message;
+        showNotification('Error', 'Hubo un problema durante el escaneo.');
+      }
+    };
+
+    document.getElementById("downloadPdfBtn").addEventListener("click", async () => {
+      try {
+        const response = await fetch("/api/pentest/download-pdf");
+        if (!response.ok) throw new Error("No se pudo generar el PDF.");
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "reporte_seguridad.pdf";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(url);
+      } catch (e) {
+        alert("❌ Error al descargar el PDF: " + e.message);
+      }
+    });
+
+    async function loadLastJson() {
+      try {
+        const response = await fetch("/api/pentest/report");
+        const json = await response.json();
+        reportIcons.innerHTML = "";
+
+        // Mostrar la URL escaneada
+        const scanUrlDisplay = document.getElementById('scanUrlDisplay');
+        const targetUrl = json.target || json.infos?.target || 'URL no disponible';
+        scanUrlDisplay.innerHTML = `<strong>🎯 URL Escaneada:</strong> ${targetUrl}`;
+
+        const severityMap = {
+          1: "🟡 Bajo",
+          2: "🟠 Medio",
+          3: "🔴 Alto"
+        };
+
+        const vulnerabilities = json["vulnerabilities"] || json;
+        
+        // Contadores para estadísticas
+        let stats = {
+          total: 0,
+          high: 0,
+          medium: 0,
+          low: 0,
+          categories: {}
+        };
+
+        Object.entries(vulnerabilities).forEach(([category, items]) => {
+          if (Array.isArray(items) && items.length > 0) {
+            stats.categories[category] = items.length;
+            
+            const section = document.createElement("div");
+            section.className = "mb-4 p-3 border border-gray-200 rounded bg-gray-50 shadow-sm";
+
+            let html = `<h4 class="text-sm font-bold text-indigo-700 mb-2">${category} (${items.length})</h4><ul class="space-y-2 text-xs">`;
+
+            items.forEach(item => {
+              stats.total++;
+              
+              // Contar por severidad
+              if (item.level === 3) stats.high++;
+              else if (item.level === 2) stats.medium++;
+              else if (item.level === 1) stats.low++;
+              
+              html += `
+                <li class="p-2 bg-white rounded border">
+                  <div><strong>ℹ️ Info:</strong> ${item.info || "—"}</div>
+                  <div><strong>🔍 Módulo:</strong> ${item.module || "—"}</div>
+                  <div><strong>📄 Método:</strong> ${item.method || "—"} <strong>Ruta:</strong> ${item.path || "/"}</div>
+                  <div><strong>🎯 Nivel:</strong> ${severityMap[item.level] || "N/A"}</div>
+                  ${item.wstg ? `<div><strong>📚 OWASP:</strong> ${item.wstg.join(", ")}</div>` : ""}
+                </li>
+              `;
+            });
+
+            html += "</ul>";
+            section.innerHTML = html;
+            reportIcons.appendChild(section);
+          }
+        });
+
+        // Actualizar estadísticas numéricas
+        document.getElementById('totalVulns').textContent = stats.total;
+        document.getElementById('highSeverity').textContent = stats.high;
+        document.getElementById('mediumSeverity').textContent = stats.medium;
+        document.getElementById('lowSeverity').textContent = stats.low;
+        
+        // Mostrar sección de estadísticas si hay datos
+        if (stats.total > 0) {
+          document.getElementById('statisticsSection').classList.remove('hidden');
+          createCharts(stats);
+        }
+
+        if (reportIcons.innerHTML === "") {
+          reportIcons.innerHTML = '<p class="text-gray-500 text-sm">✅ No se encontraron vulnerabilidades detectadas.</p>';
+        }
+
+      } catch (err) {
+        reportIcons.innerHTML = '<p class="text-red-500 text-sm">❌ No se pudo cargar el resumen.</p>';
+        console.error("ERROR al cargar JSON:", err);
+      }
+    }
+
+    // Función para crear gráficos
+    function createCharts(stats) {
+      // Gráfico de severidad
+      const severityCtx = document.getElementById('severityChart').getContext('2d');
+      new Chart(severityCtx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Alta', 'Media', 'Baja'],
+          datasets: [{
+            data: [stats.high, stats.medium, stats.low],
+            backgroundColor: ['#ef4444', '#f97316', '#eab308'],
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom'
+            }
+          }
+        }
+      });
+      
+      // Gráfico de categorías
+      const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+      const categoryLabels = Object.keys(stats.categories);
+      const categoryData = Object.values(stats.categories);
+      
+      new Chart(categoryCtx, {
+        type: 'bar',
+        data: {
+          labels: categoryLabels,
+          datasets: [{
+            label: 'Vulnerabilidades',
+            data: categoryData,
+            backgroundColor: '#3b82f6',
+            borderColor: '#1d4ed8',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                stepSize: 1
+              }
+            }
+          },
+          plugins: {
+            legend: {
+              display: false
+            }
+          }
+        }
+      });
+    }
+
+    // Función para mostrar notificaciones
+    function showNotification(title, message) {
+      // Crear contenedor de notificación si no existe
+      let notificationContainer = document.getElementById('notificationContainer');
+      if (!notificationContainer) {
+        notificationContainer = document.createElement('div');
+        notificationContainer.id = 'notificationContainer';
+        notificationContainer.className = 'fixed top-4 right-4 z-50 space-y-2';
+        document.body.appendChild(notificationContainer);
+      }
+      
+      // Crear notificación
+      const notification = document.createElement('div');
+      notification.className = 'bg-green-500 text-white px-4 py-3 rounded-lg shadow-lg max-w-sm';
+      notification.innerHTML = `
+        <div class="font-semibold">${title}</div>
+        <div class="text-sm">${message}</div>
+      `;
+      
+      notificationContainer.appendChild(notification);
+      
+      // Auto-remover después de 5 segundos
+      setTimeout(() => {
+        notification.remove();
+      }, 5000);
+    }
+
+    // Ejecutar al cargar
+    window.onload = loadLastJson;
+  </script>
+</body>
+</html>
+  

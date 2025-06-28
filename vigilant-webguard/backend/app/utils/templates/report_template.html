@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Reporte de Vulnerabilidades</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        h1, h2 { color: #222; }
+        .vuln-block { margin-bottom: 20px; padding: 10px; border: 1px solid #ddd; }
+        .level-1 { background: #ffeeba; }
+        .level-2 { background: #f8d7da; }
+        .level-3 { background: #f5c6cb; }
+    </style>
+</head>
+<body>
+    <h1>Reporte de Seguridad</h1>
+    <p><strong>Objetivo:</strong> {{ data.infos.target }}</p>
+    <p><strong>Fecha:</strong> {{ data.infos.date }}</p>
+    <p><strong>Wapiti versión:</strong> {{ data.infos.version }}</p>
+
+    <h2>Vulnerabilidades Encontradas</h2>
+    {% for vuln_name, items in data.vulnerabilities.items() %}
+        {% if items %}
+        <div class="vuln-block">
+            <h3>{{ vuln_name }}</h3>
+            {% for item in items %}
+                <p><strong>Ruta:</strong> {{ item.path }}</p>
+                <p><strong>Detalles:</strong> {{ item.info }}</p>
+                <p><strong>Severidad:</strong> {{ item.level }}</p>
+                <hr>
+            {% endfor %}
+        </div>
+        {% endif %}
+    {% endfor %}
+</body>
+</html>

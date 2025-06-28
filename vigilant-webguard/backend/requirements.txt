@@ -1,0 +1,30 @@
+# FastAPI y servidor
+fastapi==0.115.14
+uvicorn[standard]==0.34.0
+
+# Librerías básicas
+requests==2.32.4
+python-dotenv==1.1.1
+pydantic==2.11.7
+aiohttp==3.11.10
+aiofiles==24.1.0
+
+# APIs de seguridad
+python-whois==0.9.5
+dnspython==2.7.0
+psutil==7.0.0
+
+# PDF y templates
+jinja2==3.1.6
+reportlab==4.4.2
+
+# Logging
+loguru==0.7.3
+
+# Opcional - instalar manualmente si están disponibles
+# wapiti3
+# python-nmap
+
+# Nuevas dependencias para servicios mejorados
+weasyprint==62.3
+ipwhois==1.3.0
