@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Vigilant WebGuard - SOC Dashboard</title>
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vigilant WebGuard - SOC Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
   <style>
     .animate-pulse-fast {
@@ -185,9 +187,7 @@
         <!-- Attack Map -->
         <div class="bg-gray-800 p-6 rounded-lg border border-gray-700">
           <h3 class="text-lg font-semibold mb-4">🗺️ Mapa de Ataques en Tiempo Real</h3>
-          <div id="attackMap" class="h-96 bg-gray-900 rounded flex items-center justify-center">
-            <p class="text-gray-500">Mapa de ataques geográficos (Simulado)</p>
-          </div>
+        <div id="attackMap" class="h-96 bg-gray-900 rounded"></div>
         </div>
       </section>
 
@@ -293,12 +293,106 @@
     let currentSection = 'overview';
     let updateInterval;
     
+    // Variables del mapa
+    let attackMap;
+    let attackMarkers = [];
+    
     // Inicialización
     document.addEventListener('DOMContentLoaded', function() {
       updateCurrentTime();
       startRealTimeUpdates();
       showSection('overview');
+      initializeAttackMap();
     });
+    
+    // Inicializar mapa de ataques
+    function initializeAttackMap() {
+      try {
+        attackMap = L.map('attackMap').setView([20, 0], 2);
+        
+        // Usar tile layer oscuro
+        L.tileLayer('https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png', {
+          attribution: '&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>',
+          maxZoom: 18
+        }).addTo(attackMap);
+        
+        // Iniciar simulación de ataques
+        startAttackSimulation();
+        
+      } catch (error) {
+        console.error('Error inicializando mapa:', error);
+        document.getElementById('attackMap').innerHTML = '<div class="flex items-center justify-center h-full text-gray-400">Error cargando mapa</div>';
+      }
+    }
+    
+    // Simular ataques en tiempo real
+    function startAttackSimulation() {
+      setInterval(() => {
+        if (Math.random() < 0.7) { // 70% probabilidad cada 3 segundos
+          simulateAttack();
+        }
+      }, 3000);
+    }
+    
+    // Simular un ataque
+    function simulateAttack() {
+      const attackTypes = [
+        { type: 'XSS', color: '#ef4444' },
+        { type: 'SQL_INJECTION', color: '#dc2626' },
+        { type: 'MALICIOUS_IP', color: '#f97316' },
+        { type: 'DIRECTORY_TRAVERSAL', color: '#a855f7' },
+        { type: 'BRUTE_FORCE', color: '#eab308' }
+      ];
+      
+      const countries = [
+        { name: 'China', lat: 35.8617, lng: 104.1954 },
+        { name: 'Rusia', lat: 61.5240, lng: 105.3188 },
+        { name: 'Estados Unidos', lat: 37.0902, lng: -95.7129 },
+        { name: 'Brasil', lat: -14.2350, lng: -51.9253 },
+        { name: 'India', lat: 20.5937, lng: 78.9629 },
+        { name: 'Alemania', lat: 51.1657, lng: 10.4515 }
+      ];
+      
+      const attack = attackTypes[Math.floor(Math.random() * attackTypes.length)];
+      const country = countries[Math.floor(Math.random() * countries.length)];
+      
+      // Añadir ruido a las coordenadas
+      const lat = country.lat + (Math.random() - 0.5) * 10;
+      const lng = country.lng + (Math.random() - 0.5) * 10;
+      
+      // Crear marcador en el mapa
+      const marker = L.circleMarker([lat, lng], {
+        color: attack.color,
+        fillColor: attack.color,
+        fillOpacity: 0.8,
+        radius: 8,
+        className: 'attack-marker'
+      }).addTo(attackMap);
+      
+      // Popup con información del ataque
+      marker.bindPopup(`
+        <div style="color: #1f2937;">
+          <strong>${attack.type.replace('_', ' ')}</strong><br>
+          País: ${country.name}<br>
+          Hora: ${new Date().toLocaleTimeString()}
+        </div>
+      `);
+      
+      // Añadir a la lista de marcadores
+      attackMarkers.push(marker);
+      
+      // Remover marcadores antiguos (mantener solo 30)
+      if (attackMarkers.length > 30) {
+        const oldMarker = attackMarkers.shift();
+        attackMap.removeLayer(oldMarker);
+      }
+      
+      // Animación de aparición
+      marker.setStyle({ radius: 15 });
+      setTimeout(() => {
+        marker.setStyle({ radius: 8 });
+      }, 500);
+    }
     
     // Gestión de secciones
     function showSection(sectionId) {
