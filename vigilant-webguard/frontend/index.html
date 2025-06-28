@@ -126,6 +126,10 @@
     const container = document.getElementById('outputContainer');
     const reportIcons = document.getElementById('reportIcons');
 
+    // Variables globales para el escaneo en vivo
+    let currentScanId = null;
+    let liveUpdateInterval = null;
+    
     document.getElementById('scanButton').onclick = async () => {
       const target = document.getElementById('target').value;
       const engine = document.getElementById('engine').value;
@@ -144,74 +148,229 @@
       progressSection.classList.remove('hidden');
       container.classList.remove('hidden');
       
-      scanTarget.textContent = `Escaneando: ${target}`;
-      scanStatus.textContent = 'Iniciando escaneo...';
-      progressBar.style.width = '10%';
+      scanTarget.textContent = `Análisis en tiempo real: ${target}`;
+      scanStatus.textContent = 'Iniciando análisis progresivo...';
+      progressBar.style.width = '0%';
+      progressBar.style.backgroundColor = '#3b82f6'; // Azul inicial
       
-      output.textContent = '⏳ Ejecutando escaneo...';
+      output.textContent = '🚀 Iniciando análisis progresivo en tiempo real...';
 
       try {
-        const response = await fetch('/api/pentest/execute', {
+        // Iniciar análisis progresivo
+        const response = await fetch('/api/live/start-live-scan', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ url: target })
         });
         const data = await response.json();
         
-        // Simular progreso mientras esperamos el resultado
-        let progress = 10;
-        const scanId = data.scan_id;
+        currentScanId = data.scan_id;
         
-        const progressInterval = setInterval(async () => {
-          progress += Math.random() * 15;
-          if (progress > 95) progress = 95;
-          
-          progressBar.style.width = progress + '%';
-          scanStatus.textContent = `Escaneando con ${engine}... ${Math.round(progress)}%`;
-          
-          // Verificar si el escaneo ha terminado
-          try {
-            const statusResponse = await fetch(`/api/scan/${scanId}`);
-            const statusData = await statusResponse.json();
-            
-            if (statusData.status === 'completed') {
-              clearInterval(progressInterval);
-              progressBar.style.width = '100%';
-              progressBar.style.backgroundColor = '#10b981'; // Verde
-              scanStatus.textContent = '✅ Escaneo completado exitosamente';
-              
-              // Mostrar notificación
-              showNotification('¡Escaneo completado!', `El análisis de ${target} ha finalizado.`);
-              
-              // Recargar el resumen
-              setTimeout(() => {
-                loadLastJson();
-                progressSection.classList.add('hidden');
-              }, 2000);
-            }
-          } catch (err) {
-            console.log('Aún escaneando...');
-          }
-        }, 2000);
+        // Iniciar actualizaciones en tiempo real
+        startLiveUpdates(currentScanId);
         
-        // Timeout de seguridad (5 minutos)
-        setTimeout(() => {
-          clearInterval(progressInterval);
-          if (progress < 100) {
-            progressBar.style.backgroundColor = '#ef4444'; // Rojo
-            scanStatus.textContent = '⚠️ Escaneo tardando más de lo esperado';
-            showNotification('Escaneo en progreso', 'El escaneo está tomando más tiempo del esperado.');
-          }
-        }, 300000);
+        // Notificar al Service Worker
+        if (navigator.serviceWorker.controller) {
+          navigator.serviceWorker.controller.postMessage({
+            type: 'START_SCAN_MONITORING',
+            data: { scanId: currentScanId, targetUrl: target }
+          });
+        }
         
         output.textContent = JSON.stringify(data, null, 2);
         
       } catch (err) {
         progressBar.style.backgroundColor = '#ef4444'; // Rojo
-        scanStatus.textContent = '❌ Error en el escaneo';
+        scanStatus.textContent = '❌ Error iniciando análisis';
         output.textContent = "❌ " + err.message;
-        showNotification('Error', 'Hubo un problema durante el escaneo.');
+        showInPageNotification('Error', 'No se pudo iniciar el análisis.', 'error');
       }
+    };
+    
+    // Función para actualizaciones en tiempo real
+    function startLiveUpdates(scanId) {
+      liveUpdateInterval = setInterval(async () => {
+        try {
+          const response = await fetch(`/api/live/live-scan-progress/${scanId}`);
+          const progress = await response.json();
+          
+          // Actualizar UI
+          updateProgressUI(progress);
+          
+          // Si está completado, detener actualizaciones
+          if (progress.status === 'completado') {
+            clearInterval(liveUpdateInterval);
+            onScanCompleted(progress);
+          } else if (progress.status === 'error') {
+            clearInterval(liveUpdateInterval);
+            onScanError(progress);
+          }
+          
+        } catch (error) {
+          console.error('Error obteniendo progreso:', error);
+        }
+      }, 2000); // Actualizar cada 2 segundos
+    }
+    
+    // Actualizar UI con progreso
+    function updateProgressUI(progress) {
+      const progressBar = document.getElementById('progressBar');
+      const scanStatus = document.getElementById('scanStatus');
+      const reportIcons = document.getElementById('reportIcons');
+      
+      // Actualizar barra de progreso
+      progressBar.style.width = progress.progress + '%';
+      scanStatus.textContent = `${progress.current_step} (${progress.progress}%)`;
+      
+      // Actualizar resumen en tiempo real
+      if (progress.vulnerabilities_found > 0 || progress.critical_issues > 0) {
+        const liveStats = document.createElement('div');
+        liveStats.className = 'mb-4 p-3 border border-blue-200 rounded bg-blue-50';
+        liveStats.innerHTML = `
+          <h4 class="font-bold text-blue-700 mb-2">📊 Resultados en Tiempo Real</h4>
+          <div class="grid grid-cols-2 gap-4 text-sm">
+            <div>
+              <span class="font-semibold">Vulnerabilidades:</span> 
+              <span class="text-red-600 font-bold">${progress.vulnerabilities_found}</span>
+            </div>
+            <div>
+              <span class="font-semibold">Críticas:</span> 
+              <span class="text-red-700 font-bold">${progress.critical_issues}</span>
+            </div>
+          </div>
+          <div class="mt-2">
+            <div class="text-xs font-semibold text-gray-600 mb-1">Últimas recomendaciones:</div>
+            ${progress.recommendations.slice(-3).map(rec => 
+              `<div class="text-xs text-gray-700">• ${rec}</div>`
+            ).join('')}
+          </div>
+        `;
+        
+        // Reemplazar stats anteriores
+        const existingStats = reportIcons.querySelector('.border-blue-200');
+        if (existingStats) {
+          existingStats.replaceWith(liveStats);
+        } else {
+          reportIcons.insertBefore(liveStats, reportIcons.firstChild);
+        }
+        
+        // Mostrar sección de estadísticas
+        document.getElementById('statisticsSection').classList.remove('hidden');
+        updateLiveCharts(progress);
+      }
+    }
+    
+    // Actualizar gráficos en tiempo real
+    function updateLiveCharts(progress) {
+      // Actualizar contadores
+      document.getElementById('totalVulns').textContent = progress.vulnerabilities_found;
+      document.getElementById('highSeverity').textContent = progress.critical_issues;
+      document.getElementById('mediumSeverity').textContent = Math.max(0, progress.vulnerabilities_found - progress.critical_issues);
+      document.getElementById('lowSeverity').textContent = 0; // Se actualizará con datos reales
+    }
+    
+    // Función cuando el escaneo se completa
+    function onScanCompleted(progress) {
+      const progressBar = document.getElementById('progressBar');
+      const scanStatus = document.getElementById('scanStatus');
+      const progressSection = document.getElementById('progressSection');
+      
+      progressBar.style.width = '100%';
+      progressBar.style.backgroundColor = '#10b981'; // Verde
+      scanStatus.textContent = '✅ Análisis completo finalizado';
+      
+      showInPageNotification(
+        '¡Análisis Completado!', 
+        `Se encontraron ${progress.vulnerabilities_found} vulnerabilidades (${progress.critical_issues} críticas)`,
+        'success'
+      );
+      
+      // Cargar resultados completos
+      setTimeout(async () => {
+        await loadLiveResults(progress.scan_id);
+        progressSection.classList.add('hidden');
+      }, 3000);
+    }
+    
+    // Función cuando hay error en el escaneo
+    function onScanError(progress) {
+      const progressBar = document.getElementById('progressBar');
+      const scanStatus = document.getElementById('scanStatus');
+      
+      progressBar.style.backgroundColor = '#ef4444'; // Rojo
+      scanStatus.textContent = '❌ Error en el análisis';
+      
+      showInPageNotification('Error en Análisis', 'Hubo un problema durante el análisis.', 'error');
+    }
+    
+    // Cargar resultados completos del análisis en vivo
+    async function loadLiveResults(scanId) {
+      try {
+        const response = await fetch(`/api/live/live-scan-results/${scanId}`);
+        const results = await response.json();
+        
+        // Procesar y mostrar resultados como en loadLastJson pero con datos del análisis en vivo
+        displayLiveResults(results);
+        
+      } catch (error) {
+        console.error('Error cargando resultados completos:', error);
+      }
+    }
+    
+    // Mostrar resultados del análisis en vivo
+    function displayLiveResults(results) {
+      const reportIcons = document.getElementById('reportIcons');
+      const scanUrlDisplay = document.getElementById('scanUrlDisplay');
+      
+      scanUrlDisplay.innerHTML = `<strong>🎯 URL Analizada:</strong> ${results.target_url}`;
+      
+      // Limpiar contenido anterior
+      reportIcons.innerHTML = '';
+      
+      // Mostrar resumen final
+      const finalSummary = document.createElement('div');
+      finalSummary.className = 'mb-6 p-4 border border-green-200 rounded bg-green-50';
+      finalSummary.innerHTML = `
+        <h4 class="font-bold text-green-800 mb-3">📋 Resumen Final del Análisis</h4>
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
+          <div class="text-center">
+            <div class="text-2xl font-bold text-red-600">${results.vulnerabilities_found}</div>
+            <div class="text-gray-600">Total Vulnerabilidades</div>
+          </div>
+          <div class="text-center">
+            <div class="text-2xl font-bold text-red-700">${results.critical_issues}</div>
+            <div class="text-gray-600">Críticas</div>
+          </div>
+          <div class="text-center">
+            <div class="text-2xl font-bold text-blue-600">${results.progress}%</div>
+            <div class="text-gray-600">Completado</div>
+          </div>
+          <div class="text-center">
+            <div class="text-2xl font-bold text-green-600">${results.status === 'completado' ? '✓' : '⚠'}</div>
+            <div class="text-gray-600">Estado</div>
+          </div>
+        </div>
+      `;
+      
+      reportIcons.appendChild(finalSummary);
+      
+      // Mostrar recomendaciones principales
+      if (results.recommendations && results.recommendations.length > 0) {
+        const recommendationsDiv = document.createElement('div');
+        recommendationsDiv.className = 'mb-4 p-4 border border-orange-200 rounded bg-orange-50';
+        recommendationsDiv.innerHTML = `
+          <h4 class="font-bold text-orange-800 mb-3">💡 Recomendaciones Prioritarias</h4>
+          <ul class="space-y-1 text-sm">
+            ${results.recommendations.slice(0, 8).map(rec => 
+              `<li class="text-orange-700">• ${rec}</li>`
+            ).join('')}
+          </ul>
+        `;
+        reportIcons.appendChild(recommendationsDiv);
+      }
+      
+      // Mostrar estadísticas finales
+      document.getElementById('statisticsSection').classList.remove('hidden');
     };
 
     document.getElementById("downloadPdfBtn").addEventListener("click", async () => {

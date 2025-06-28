@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.routes.scan import router as scan_router
 from app.routes.dashboard import router as dashboard_router
 from app.routes.pentest import router as pentest_router
+from app.routes.live_scan import router as live_scan_router
 from app.services.realtime_monitor import realtime_monitor
 import asyncio
 import os
@@ -30,6 +31,7 @@ app.add_middleware(
 app.include_router(scan_router, prefix="/api")
 app.include_router(dashboard_router, prefix="/api/dashboard")
 app.include_router(pentest_router, prefix="/api/pentest")
+app.include_router(live_scan_router, prefix="/api/live")
 
 @app.on_event("startup")
 async def startup_event():
