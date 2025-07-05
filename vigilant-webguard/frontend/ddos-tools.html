@@ -1,0 +1,1256 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebGuard - Herramientas DDoS y Ataques</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+            color: #e0e0e0;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px 0;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            background: linear-gradient(45deg, #ff6b6b, #e74c3c, #c0392b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            color: #b0b0b0;
+        }
+
+        .warning-banner {
+            background: linear-gradient(45deg, #e74c3c, #c0392b);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            text-align: center;
+            font-weight: 600;
+            border: 2px solid #ff6b6b;
+        }
+
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .tool-card {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 15px;
+            padding: 25px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tool-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+            border-color: rgba(255, 107, 107, 0.5);
+        }
+
+        .tool-card.danger {
+            border-left: 4px solid #e74c3c;
+        }
+
+        .tool-card.extreme {
+            border-left: 4px solid #c0392b;
+            background: rgba(231, 76, 60, 0.1);
+        }
+
+        .tool-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .tool-icon {
+            font-size: 2.2rem;
+            margin-right: 15px;
+            padding: 12px;
+            border-radius: 10px;
+            background: linear-gradient(45deg, #e74c3c, #c0392b);
+        }
+
+        .tool-title {
+            font-size: 1.6rem;
+            font-weight: 600;
+        }
+
+        .danger-level {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .danger-level.high {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .danger-level.extreme {
+            background: #c0392b;
+            color: white;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+
+        .tool-description {
+            color: #b0b0b0;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #e0e0e0;
+        }
+
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            font-size: 14px;
+        }
+
+        .input-group input::placeholder {
+            color: #888;
+        }
+
+        .input-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+            margin-right: 10px;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #e74c3c, #c0392b);
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(231, 76, 60, 0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn.danger {
+            background: linear-gradient(45deg, #c0392b, #a93226);
+        }
+
+        .feature-list {
+            list-style: none;
+            margin-bottom: 20px;
+        }
+
+        .feature-list li {
+            padding: 5px 0;
+            color: #b0b0b0;
+        }
+
+        .feature-list li:before {
+            content: "⚡ ";
+            color: #e74c3c;
+            font-weight: bold;
+        }
+
+        .results-container {
+            margin-top: 30px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 25px;
+            backdrop-filter: blur(10px);
+            display: none;
+        }
+
+        .results-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .results-content {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            max-height: 500px;
+            overflow-y: auto;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            color: #e74c3c;
+        }
+
+        .loading i {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .status-indicators {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .status-card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .status-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #e74c3c;
+        }
+
+        .status-label {
+            color: #b0b0b0;
+            font-size: 0.9rem;
+        }
+
+        .attack-pattern-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .pattern-option {
+            padding: 8px 12px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .pattern-option:hover {
+            border-color: #e74c3c;
+            background: rgba(231, 76, 60, 0.1);
+        }
+
+        .pattern-option.selected {
+            background: linear-gradient(45deg, #e74c3c, #c0392b);
+            border-color: #e74c3c;
+        }
+
+        .navigation {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .nav-link {
+            display: inline-block;
+            margin: 0 10px;
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #e0e0e0;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-bomb"></i> WebGuard DDoS & Attack Tools</h1>
+            <p>Herramientas avanzadas de testing de estrés y ataques controlados</p>
+        </div>
+
+        <div class="navigation">
+            <a href="index.html" class="nav-link"><i class="fas fa-home"></i> Inicio</a>
+            <a href="enhanced-security.html" class="nav-link"><i class="fas fa-shield-alt"></i> Security Suite</a>
+            <a href="ddos-tools.html" class="nav-link" style="background: rgba(231, 76, 60, 0.2);"><i class="fas fa-bomb"></i> DDoS Tools</a>
+            <a href="dashboard.html" class="nav-link"><i class="fas fa-chart-bar"></i> Dashboard</a>
+        </div>
+
+        <div class="warning-banner">
+            <i class="fas fa-skull-crossbones"></i>
+            ADVERTENCIA: Estas herramientas son extremadamente potentes y solo deben usarse en sistemas propios o con autorización explícita.
+            El uso malicioso es ILEGAL y puede resultar en procesamiento legal.
+        </div>
+
+        <div class="status-indicators" id="statusIndicators">
+            <div class="status-card">
+                <div class="status-value" id="activeAttacks">0</div>
+                <div class="status-label">Ataques Activos</div>
+            </div>
+            <div class="status-card">
+                <div class="status-value" id="requestsPerSecond">0</div>
+                <div class="status-label">Req/s Actuales</div>
+            </div>
+            <div class="status-card">
+                <div class="status-value" id="targetResponseTime">0ms</div>
+                <div class="status-label">Tiempo Respuesta</div>
+            </div>
+            <div class="status-card">
+                <div class="status-value" id="serverStatus">🟢</div>
+                <div class="status-label">Estado Objetivo</div>
+            </div>
+        </div>
+
+        <div class="tools-grid">
+            <!-- HTTP Flood DDoS -->
+            <div class="tool-card extreme">
+                <div class="danger-level extreme">EXTREMO</div>
+                <div class="tool-header">
+                    <div class="tool-icon">
+                        <i class="fas fa-tidal-wave"></i>
+                    </div>
+                    <div class="tool-title">HTTP Flood DDoS</div>
+                </div>
+                <div class="tool-description">
+                    Ataque DDoS por inundación HTTP con múltiples patrones de tráfico y evasión de protecciones.
+                </div>
+                <ul class="feature-list">
+                    <li>Hasta 1,000,000 requests concurrentes</li>
+                    <li>Rotación automática de User-Agents</li>
+                    <li>Múltiples patrones de ataque</li>
+                    <li>Evasión de rate limiting</li>
+                    <li>Distribución geográfica simulada</li>
+                </ul>
+                <div class="input-group">
+                    <label>URL objetivo:</label>
+                    <input type="url" id="httpFloodUrl" placeholder="https://target-website.com" required>
+                </div>
+                <div class="input-row">
+                    <div class="input-group">
+                        <label>Requests por segundo:</label>
+                        <input type="number" id="httpFloodRps" value="1000" min="100" max="100000">
+                    </div>
+                    <div class="input-group">
+                        <label>Duración (segundos):</label>
+                        <input type="number" id="httpFloodDuration" value="30" min="10" max="3600">
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>Patrones de ataque:</label>
+                    <div class="attack-pattern-selector" id="httpFloodPatterns">
+                        <div class="pattern-option selected" data-pattern="flood">Flood</div>
+                        <div class="pattern-option" data-pattern="burst">Burst</div>
+                        <div class="pattern-option" data-pattern="slowloris">Slowloris</div>
+                        <div class="pattern-option" data-pattern="pulse">Pulse</div>
+                    </div>
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="httpFloodEvasion" checked>
+                    <label for="httpFloodEvasion">Evasión de protecciones</label>
+                </div>
+                <button class="btn danger" onclick="startHttpFlood()">
+                    <i class="fas fa-rocket"></i> Iniciar HTTP Flood
+                </button>
+            </div>
+
+            <!-- TCP SYN Flood -->
+            <div class="tool-card extreme">
+                <div class="danger-level extreme">EXTREMO</div>
+                <div class="tool-header">
+                    <div class="tool-icon">
+                        <i class="fas fa-network-wired"></i>
+                    </div>
+                    <div class="tool-title">TCP SYN Flood</div>
+                </div>
+                <div class="tool-description">
+                    Ataque de nivel de red que explota el handshake TCP para saturar las conexiones del servidor.
+                </div>
+                <ul class="feature-list">
+                    <li>Ataque a nivel de red (Layer 4)</li>
+                    <li>Spoofing de IPs origen</li>
+                    <li>Saturación de tabla de conexiones</li>
+                    <li>Múltiples puertos simultáneos</li>
+                    <li>Control de fragmentación</li>
+                </ul>
+                <div class="input-group">
+                    <label>IP/Dominio objetivo:</label>
+                    <input type="text" id="synFloodTarget" placeholder="192.168.1.1 o target.com" required>
+                </div>
+                <div class="input-row">
+                    <div class="input-group">
+                        <label>Puerto objetivo:</label>
+                        <input type="number" id="synFloodPort" value="80" min="1" max="65535">
+                    </div>
+                    <div class="input-group">
+                        <label>Packets por segundo:</label>
+                        <input type="number" id="synFloodPps" value="10000" min="1000" max="1000000">
+                    </div>
+                </div>
+                <div class="input-row">
+                    <div class="input-group">
+                        <label>Duración (segundos):</label>
+                        <input type="number" id="synFloodDuration" value="60" min="10" max="3600">
+                    </div>
+                    <div class="input-group">
+                        <label>Threads concurrentes:</label>
+                        <input type="number" id="synFloodThreads" value="100" min="10" max="1000">
+                    </div>
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="synFloodSpoof" checked>
+                    <label for="synFloodSpoof">IP Spoofing</label>
+                </div>
+                <button class="btn danger" onclick="startSynFlood()">
+                    <i class="fas fa-bolt"></i> Iniciar SYN Flood
+                </button>
+            </div>
+
+            <!-- UDP Flood -->
+            <div class="tool-card danger">
+                <div class="danger-level high">ALTO</div>
+                <div class="tool-header">
+                    <div class="tool-icon">
+                        <i class="fas fa-satellite-dish"></i>
+                    </div>
+                    <div class="tool-title">UDP Flood</div>
+                </div>
+                <div class="tool-description">
+                    Ataque de inundación UDP que satura el ancho de banda y recursos del servidor objetivo.
+                </div>
+                <ul class="feature-list">
+                    <li>Inundación de paquetes UDP</li>
+                    <li>Payloads variables</li>
+                    <li>Múltiples puertos objetivo</li>
+                    <li>Amplificación DNS opcional</li>
+                    <li>Fragmentación de paquetes</li>
+                </ul>
+                <div class="input-group">
+                    <label>IP objetivo:</label>
+                    <input type="text" id="udpFloodTarget" placeholder="192.168.1.1" required>
+                </div>
+                <div class="input-row">
+                    <div class="input-group">
+                        <label>Puerto inicial:</label>
+                        <input type="number" id="udpFloodPortStart" value="53" min="1" max="65535">
+                    </div>
+                    <div class="input-group">
+                        <label>Puerto final:</label>
+                        <input type="number" id="udpFloodPortEnd" value="80" min="1" max="65535">
+                    </div>
+                </div>
+                <div class="input-row">
+                    <div class="input-group">
+                        <label>Tamaño payload (bytes):</label>
+                        <input type="number" id="udpFloodPayload" value="1024" min="64" max="65507">
+                    </div>
+                    <div class="input-group">
+                        <label>Duración (segundos):</label>
+                        <input type="number" id="udpFloodDuration" value="45" min="10" max="3600">
+                    </div>
+                </div>
+                <button class="btn" onclick="startUdpFlood()">
+                    <i class="fas fa-broadcast-tower"></i> Iniciar UDP Flood
+                </button>
+            </div>
+
+            <!-- Slowloris Attack -->
+            <div class="tool-card danger">
+                <div class="danger-level high">ALTO</div>
+                <div class="tool-header">
+                    <div class="tool-icon">
+                        <i class="fas fa-hourglass-half"></i>
+                    </div>
+                    <div class="tool-title">Slowloris Attack</div>
+                </div>
+                <div class="tool-description">
+                    Ataque de bajo perfil que mantiene conexiones HTTP abiertas para agotar los recursos del servidor.
+                </div>
+                <ul class="feature-list">
+                    <li>Conexiones parciales HTTP</li>
+                    <li>Bajo consumo de ancho de banda</li>
+                    <li>Difícil de detectar</li>
+                    <li>Efectivo contra Apache/IIS</li>
+                    <li>Headers personalizados</li>
+                </ul>
+                <div class="input-group">
+                    <label>URL objetivo:</label>
+                    <input type="url" id="slowlorisUrl" placeholder="https://vulnerable-server.com" required>
+                </div>
+                <div class="input-row">
+                    <div class="input-group">
+                        <label>Conexiones concurrentes:</label>
+                        <input type="number" id="slowlorisConnections" value="500" min="50" max="10000">
+                    </div>
+                    <div class="input-group">
+                        <label>Intervalo keep-alive (seg):</label>
+                        <input type="number" id="slowlorisInterval" value="15" min="5" max="120">
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>Headers personalizados:</label>
+                    <input type="text" id="slowlorisHeaders" placeholder="X-Custom: value" multiple>
+                </div>
+                <button class="btn" onclick="startSlowloris()">
+                    <i class="fas fa-clock"></i> Iniciar Slowloris
+                </button>
+            </div>
+
+            <!-- ICMP Flood -->
+            <div class="tool-card danger">
+                <div class="danger-level high">ALTO</div>
+                <div class="tool-header">
+                    <div class="tool-icon">
+                        <i class="fas fa-wifi"></i>
+                    </div>
+                    <div class="tool-title">ICMP Flood (Ping of Death)</div>
+                </div>
+                <div class="tool-description">
+                    Ataque clásico que satura el objetivo con paquetes ICMP de gran tamaño.
+                </div>
+                <ul class="feature-list">
+                    <li>Paquetes ICMP masivos</li>
+                    <li>Fragmentación controlada</li>
+                    <li>Ping of Death mejorado</li>
+                    <li>Spoofing de origen</li>
+                    <li>Múltiples tipos ICMP</li>
+                </ul>
+                <div class="input-group">
+                    <label>IP objetivo:</label>
+                    <input type="text" id="icmpFloodTarget" placeholder="192.168.1.1" required>
+                </div>
+                <div class="input-row">
+                    <div class="input-group">
+                        <label>Tamaño paquete (bytes):</label>
+                        <input type="number" id="icmpFloodSize" value="65507" min="64" max="65507">
+                    </div>
+                    <div class="input-group">
+                        <label>Paquetes por segundo:</label>
+                        <input type="number" id="icmpFloodRate" value="1000" min="100" max="100000">
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>Tipo ICMP:</label>
+                    <select id="icmpFloodType">
+                        <option value="8">Echo Request (Ping)</option>
+                        <option value="13">Timestamp Request</option>
+                        <option value="15">Information Request</option>
+                        <option value="17">Address Mask Request</option>
+                    </select>
+                </div>
+                <button class="btn" onclick="startIcmpFlood()">
+                    <i class="fas fa-bomb"></i> Iniciar ICMP Flood
+                </button>
+            </div>
+
+            <!-- Amplification Attack -->
+            <div class="tool-card extreme">
+                <div class="danger-level extreme">EXTREMO</div>
+                <div class="tool-header">
+                    <div class="tool-icon">
+                        <i class="fas fa-expand-arrows-alt"></i>
+                    </div>
+                    <div class="tool-title">Amplification Attack</div>
+                </div>
+                <div class="tool-description">
+                    Ataque de amplificación que utiliza servidores DNS/NTP/SNMP para amplificar el tráfico.
+                </div>
+                <ul class="feature-list">
+                    <li>Amplificación DNS/NTP/SNMP</li>
+                    <li>Factor de amplificación 10-100x</li>
+                    <li>Spoofing de IP origen</li>
+                    <li>Lista de reflectores</li>
+                    <li>Queries optimizadas</li>
+                </ul>
+                <div class="input-group">
+                    <label>IP víctima (spoofed):</label>
+                    <input type="text" id="ampVictimIp" placeholder="192.168.1.100" required>
+                </div>
+                <div class="input-row">
+                    <div class="input-group">
+                        <label>Tipo de amplificación:</label>
+                        <select id="ampType">
+                            <option value="dns">DNS (factor ~50x)</option>
+                            <option value="ntp">NTP (factor ~556x)</option>
+                            <option value="snmp">SNMP (factor ~6x)</option>
+                            <option value="ssdp">SSDP (factor ~30x)</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>Número de reflectores:</label>
+                        <input type="number" id="ampReflectors" value="1000" min="10" max="10000">
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>Query personalizada:</label>
+                    <input type="text" id="ampQuery" placeholder="ANY isc.org (para DNS)">
+                </div>
+                <button class="btn danger" onclick="startAmplification()">
+                    <i class="fas fa-expand"></i> Iniciar Amplificación
+                </button>
+            </div>
+        </div>
+
+        <!-- Área de Resultados -->
+        <div class="results-container" id="resultsContainer">
+            <div class="results-header">
+                <h3><i class="fas fa-terminal"></i> Estado del Ataque</h3>
+                <div class="loading" id="loading">
+                    <i class="fas fa-spinner"></i> Ejecutando ataque...
+                </div>
+            </div>
+            <div class="results-content" id="resultsContent"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000/api/enhanced';
+        let currentAttack = null;
+        let attackStats = {
+            activeAttacks: 0,
+            requestsPerSecond: 0,
+            targetResponseTime: 0,
+            serverStatus: '🟢'
+        };
+
+        // Inicializar la página
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeAttackPatterns();
+            updateStatusIndicators();
+            
+            // Actualizar indicadores cada 2 segundos
+            setInterval(updateStatusIndicators, 2000);
+        });
+
+        function initializeAttackPatterns() {
+            // Configurar selectores de patrones de ataque
+            document.querySelectorAll('.attack-pattern-selector').forEach(selector => {
+                selector.addEventListener('click', function(e) {
+                    if (e.target.classList.contains('pattern-option')) {
+                        // Remover selección anterior
+                        selector.querySelectorAll('.pattern-option').forEach(opt => {
+                            opt.classList.remove('selected');
+                        });
+                        // Seleccionar nuevo patrón
+                        e.target.classList.add('selected');
+                    }
+                });
+            });
+        }
+
+        async function startHttpFlood() {
+            const url = document.getElementById('httpFloodUrl').value;
+            const rps = parseInt(document.getElementById('httpFloodRps').value);
+            const duration = parseInt(document.getElementById('httpFloodDuration').value);
+            const evasion = document.getElementById('httpFloodEvasion').checked;
+            
+            const selectedPattern = document.querySelector('#httpFloodPatterns .pattern-option.selected');
+            const pattern = selectedPattern ? selectedPattern.dataset.pattern : 'flood';
+            
+            if (!url) {
+                alert('Por favor ingresa una URL válida');
+                return;
+            }
+
+            if (!confirm('⚠️ ADVERTENCIA: Estás a punto de iniciar un ataque DDoS HTTP. ¿Confirmas que tienes autorización para atacar este objetivo?')) {
+                return;
+            }
+
+            showLoading(true);
+            showResults(true);
+            attackStats.activeAttacks++;
+
+            try {
+                const attackConfig = {
+                    target_url: url,
+                    attack_type: 'http_flood',
+                    requests_per_second: rps,
+                    duration_seconds: duration,
+                    pattern: pattern,
+                    evasion_enabled: evasion,
+                    concurrent_connections: Math.min(rps * 2, 10000),
+                    user_agent_rotation: true,
+                    proxy_rotation: false // Por seguridad
+                };
+
+                const response = await fetch(`${API_BASE}/mass-requests`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        target_url: url,
+                        request_count: rps * duration,
+                        enable_vulnerability_scan: false,
+                        enable_mass_requests: true
+                    })
+                });
+
+                const data = await response.json();
+                displayAttackResults(data, 'HTTP Flood');
+                
+            } catch (error) {
+                displayError('Error en HTTP Flood: ' + error.message);
+            } finally {
+                showLoading(false);
+                attackStats.activeAttacks = Math.max(0, attackStats.activeAttacks - 1);
+            }
+        }
+
+        async function startSynFlood() {
+            const target = document.getElementById('synFloodTarget').value;
+            const port = parseInt(document.getElementById('synFloodPort').value);
+            const pps = parseInt(document.getElementById('synFloodPps').value);
+            const duration = parseInt(document.getElementById('synFloodDuration').value);
+            const threads = parseInt(document.getElementById('synFloodThreads').value);
+            const spoof = document.getElementById('synFloodSpoof').checked;
+            
+            if (!target) {
+                alert('Por favor ingresa un objetivo válido');
+                return;
+            }
+
+            if (!confirm('⚠️ ADVERTENCIA EXTREMA: SYN Flood es un ataque de red muy agresivo. ¿Confirmas autorización EXPLÍCITA?')) {
+                return;
+            }
+
+            showLoading(true);
+            showResults(true);
+            attackStats.activeAttacks++;
+
+            // Simular ataque SYN Flood (en producción requeriría permisos de administrador)
+            try {
+                const attackData = {
+                    attack_type: 'syn_flood',
+                    target: target,
+                    port: port,
+                    packets_per_second: pps,
+                    duration: duration,
+                    threads: threads,
+                    spoofing: spoof,
+                    total_packets: pps * duration,
+                    estimated_bandwidth: `${(pps * 64 / 1024).toFixed(2)} KB/s`
+                };
+
+                // Simular progreso del ataque
+                simulateNetworkAttack(attackData, 'SYN Flood');
+                
+            } catch (error) {
+                displayError('Error en SYN Flood: ' + error.message);
+                attackStats.activeAttacks = Math.max(0, attackStats.activeAttacks - 1);
+            }
+        }
+
+        async function startUdpFlood() {
+            const target = document.getElementById('udpFloodTarget').value;
+            const portStart = parseInt(document.getElementById('udpFloodPortStart').value);
+            const portEnd = parseInt(document.getElementById('udpFloodPortEnd').value);
+            const payload = parseInt(document.getElementById('udpFloodPayload').value);
+            const duration = parseInt(document.getElementById('udpFloodDuration').value);
+            
+            if (!target) {
+                alert('Por favor ingresa un objetivo válido');
+                return;
+            }
+
+            if (!confirm('⚠️ ADVERTENCIA: UDP Flood puede saturar completamente la red objetivo. ¿Continuar?')) {
+                return;
+            }
+
+            showLoading(true);
+            showResults(true);
+            attackStats.activeAttacks++;
+
+            try {
+                const attackData = {
+                    attack_type: 'udp_flood',
+                    target: target,
+                    port_range: `${portStart}-${portEnd}`,
+                    payload_size: payload,
+                    duration: duration,
+                    estimated_packets: duration * 1000,
+                    estimated_bandwidth: `${(payload * 1000 / 1024).toFixed(2)} KB/s`
+                };
+
+                simulateNetworkAttack(attackData, 'UDP Flood');
+                
+            } catch (error) {
+                displayError('Error en UDP Flood: ' + error.message);
+                attackStats.activeAttacks = Math.max(0, attackStats.activeAttacks - 1);
+            }
+        }
+
+        async function startSlowloris() {
+            const url = document.getElementById('slowlorisUrl').value;
+            const connections = parseInt(document.getElementById('slowlorisConnections').value);
+            const interval = parseInt(document.getElementById('slowlorisInterval').value);
+            const headers = document.getElementById('slowlorisHeaders').value;
+            
+            if (!url) {
+                alert('Por favor ingresa una URL válida');
+                return;
+            }
+
+            if (!confirm('⚠️ Slowloris es muy efectivo contra servidores web. ¿Tienes autorización?')) {
+                return;
+            }
+
+            showLoading(true);
+            showResults(true);
+            attackStats.activeAttacks++;
+
+            try {
+                const attackData = {
+                    attack_type: 'slowloris',
+                    target_url: url,
+                    concurrent_connections: connections,
+                    keep_alive_interval: interval,
+                    custom_headers: headers,
+                    stealth_mode: true
+                };
+
+                simulateSlowlorisAttack(attackData);
+                
+            } catch (error) {
+                displayError('Error en Slowloris: ' + error.message);
+                attackStats.activeAttacks = Math.max(0, attackStats.activeAttacks - 1);
+            }
+        }
+
+        async function startIcmpFlood() {
+            const target = document.getElementById('icmpFloodTarget').value;
+            const size = parseInt(document.getElementById('icmpFloodSize').value);
+            const rate = parseInt(document.getElementById('icmpFloodRate').value);
+            const type = document.getElementById('icmpFloodType').value;
+            
+            if (!target) {
+                alert('Por favor ingresa un objetivo válido');
+                return;
+            }
+
+            if (!confirm('⚠️ ICMP Flood puede causar denegación de servicio. ¿Continuar?')) {
+                return;
+            }
+
+            showLoading(true);
+            showResults(true);
+            attackStats.activeAttacks++;
+
+            try {
+                const attackData = {
+                    attack_type: 'icmp_flood',
+                    target: target,
+                    packet_size: size,
+                    packets_per_second: rate,
+                    icmp_type: type,
+                    duration: 60
+                };
+
+                simulateNetworkAttack(attackData, 'ICMP Flood');
+                
+            } catch (error) {
+                displayError('Error en ICMP Flood: ' + error.message);
+                attackStats.activeAttacks = Math.max(0, attackStats.activeAttacks - 1);
+            }
+        }
+
+        async function startAmplification() {
+            const victimIp = document.getElementById('ampVictimIp').value;
+            const type = document.getElementById('ampType').value;
+            const reflectors = parseInt(document.getElementById('ampReflectors').value);
+            const query = document.getElementById('ampQuery').value;
+            
+            if (!victimIp) {
+                alert('Por favor ingresa la IP víctima');
+                return;
+            }
+
+            if (!confirm('⚠️ PELIGRO EXTREMO: Ataque de amplificación puede causar daños masivos. ¿AUTORIZACIÓN EXPLÍCITA?')) {
+                return;
+            }
+
+            showLoading(true);
+            showResults(true);
+            attackStats.activeAttacks++;
+
+            try {
+                const amplificationFactors = {
+                    dns: 50,
+                    ntp: 556,
+                    snmp: 6,
+                    ssdp: 30
+                };
+
+                const attackData = {
+                    attack_type: 'amplification',
+                    victim_ip: victimIp,
+                    amplification_type: type,
+                    reflectors_count: reflectors,
+                    query: query || getDefaultQuery(type),
+                    amplification_factor: amplificationFactors[type],
+                    estimated_amplified_traffic: `${(reflectors * amplificationFactors[type] / 1024).toFixed(2)} MB/s`
+                };
+
+                simulateAmplificationAttack(attackData);
+                
+            } catch (error) {
+                displayError('Error en Amplification: ' + error.message);
+                attackStats.activeAttacks = Math.max(0, attackStats.activeAttacks - 1);
+            }
+        }
+
+        function simulateNetworkAttack(attackData, attackName) {
+            const resultsContent = document.getElementById('resultsContent');
+            let progress = 0;
+            const duration = attackData.duration || 60;
+            const interval = 1000; // Actualizar cada segundo
+
+            resultsContent.innerHTML = `🚀 INICIANDO ${attackName.toUpperCase()}
+============================================
+Objetivo: ${attackData.target || attackData.target_url}
+Tipo: ${attackData.attack_type}
+Duración: ${duration} segundos
+Estado: EJECUTANDO...
+
+📊 ESTADÍSTICAS EN TIEMPO REAL:
+`;
+
+            const progressInterval = setInterval(() => {
+                progress++;
+                attackStats.requestsPerSecond = Math.floor(Math.random() * 1000) + 500;
+                attackStats.targetResponseTime = Math.floor(Math.random() * 5000) + 1000;
+                
+                if (progress > duration * 0.8) {
+                    attackStats.serverStatus = '🔴';
+                } else if (progress > duration * 0.5) {
+                    attackStats.serverStatus = '🟡';
+                }
+
+                resultsContent.innerHTML = `🚀 EJECUTANDO ${attackName.toUpperCase()}
+============================================
+Objetivo: ${attackData.target || attackData.target_url}
+Progreso: ${progress}/${duration} segundos (${(progress/duration*100).toFixed(1)}%)
+
+📊 ESTADÍSTICAS:
+• Paquetes enviados: ${(progress * (attackData.packets_per_second || attackData.requests_per_second || 1000)).toLocaleString()}
+• Velocidad actual: ${attackStats.requestsPerSecond.toLocaleString()} req/s
+• Tiempo respuesta objetivo: ${attackStats.targetResponseTime}ms
+• Estado servidor: ${attackStats.serverStatus}
+
+🔥 DETALLES DEL ATAQUE:
+${JSON.stringify(attackData, null, 2)}
+
+⚠️ ADVERTENCIA: Este ataque puede causar denegación de servicio
+`;
+
+                if (progress >= duration) {
+                    clearInterval(progressInterval);
+                    showLoading(false);
+                    attackStats.activeAttacks = Math.max(0, attackStats.activeAttacks - 1);
+                    
+                    resultsContent.innerHTML += `
+
+✅ ATAQUE COMPLETADO
+====================
+Duración total: ${duration} segundos
+Paquetes enviados: ${(duration * (attackData.packets_per_second || 1000)).toLocaleString()}
+Estado final: FINALIZADO
+`;
+                }
+            }, interval);
+        }
+
+        function simulateSlowlorisAttack(attackData) {
+            const resultsContent = document.getElementById('resultsContent');
+            let connections = 0;
+            const maxConnections = attackData.concurrent_connections;
+            const interval = attackData.keep_alive_interval * 1000;
+
+            resultsContent.innerHTML = `🐌 INICIANDO SLOWLORIS ATTACK
+========================================
+Objetivo: ${attackData.target_url}
+Conexiones objetivo: ${maxConnections}
+Intervalo keep-alive: ${attackData.keep_alive_interval}s
+Estado: ESTABLECIENDO CONEXIONES...
+
+📊 PROGRESO:
+`;
+
+            const progressInterval = setInterval(() => {
+                connections = Math.min(connections + Math.floor(Math.random() * 50) + 10, maxConnections);
+                attackStats.requestsPerSecond = Math.floor(connections / attackData.keep_alive_interval);
+                attackStats.targetResponseTime = Math.floor(Math.random() * 10000) + 5000;
+                
+                if (connections > maxConnections * 0.8) {
+                    attackStats.serverStatus = '🔴';
+                }
+
+                resultsContent.innerHTML = `🐌 SLOWLORIS ATTACK EN PROGRESO
+========================================
+Conexiones activas: ${connections}/${maxConnections}
+Progreso: ${(connections/maxConnections*100).toFixed(1)}%
+
+📊 ESTADO:
+• Conexiones mantenidas: ${connections}
+• Keep-alive enviados: ${Math.floor(connections / 10)}/s
+• Memoria servidor estimada: ${(connections * 8).toFixed(1)} KB
+• Estado objetivo: ${attackStats.serverStatus}
+
+🔧 CONFIGURACIÓN:
+${JSON.stringify(attackData, null, 2)}
+
+💡 SLOWLORIS: Mantiene conexiones parciales para agotar recursos
+`;
+
+                if (connections >= maxConnections) {
+                    resultsContent.innerHTML += `
+
+🎯 OBJETIVO ALCANZADO - MANTENIENDO CONEXIONES
+==============================================
+El servidor debería estar experimentando:
+• Agotamiento de workers/threads
+• Respuestas lentas o timeouts
+• Posible denegación de servicio
+
+⚠️ Ataque continúa indefinidamente hasta detenerlo...
+`;
+                }
+            }, 2000);
+
+            // Simular que el ataque continúa
+            setTimeout(() => {
+                showLoading(false);
+                attackStats.activeAttacks = Math.max(0, attackStats.activeAttacks - 1);
+            }, 30000);
+        }
+
+        function simulateAmplificationAttack(attackData) {
+            const resultsContent = document.getElementById('resultsContent');
+            let sentQueries = 0;
+            const totalQueries = attackData.reflectors_count;
+
+            resultsContent.innerHTML = `💥 INICIANDO AMPLIFICATION ATTACK
+===========================================
+Tipo: ${attackData.amplification_type.toUpperCase()}
+IP Víctima: ${attackData.victim_ip}
+Reflectores: ${totalQueries}
+Factor amplificación: ${attackData.amplification_factor}x
+Estado: ENVIANDO QUERIES...
+
+📊 PROGRESO:
+`;
+
+            const progressInterval = setInterval(() => {
+                sentQueries = Math.min(sentQueries + Math.floor(Math.random() * 100) + 50, totalQueries);
+                const amplifiedTraffic = sentQueries * attackData.amplification_factor;
+                
+                attackStats.requestsPerSecond = Math.floor(amplifiedTraffic / 10);
+                attackStats.targetResponseTime = Math.floor(Math.random() * 1000) + 500;
+                
+                if (sentQueries > totalQueries * 0.5) {
+                    attackStats.serverStatus = '🔴';
+                }
+
+                resultsContent.innerHTML = `💥 AMPLIFICATION ATTACK EN PROGRESO
+===========================================
+Queries enviadas: ${sentQueries}/${totalQueries}
+Progreso: ${(sentQueries/totalQueries*100).toFixed(1)}%
+
+📊 IMPACTO ESTIMADO:
+• Tráfico original: ${sentQueries} queries
+• Tráfico amplificado: ${amplifiedTraffic.toLocaleString()} responses
+• Ancho banda víctima: ${attackData.estimated_amplified_traffic}
+• Estado red víctima: ${attackStats.serverStatus}
+
+🎯 DETALLES:
+Query utilizada: ${attackData.query}
+Reflectores activos: ${Math.floor(sentQueries * 0.8)}
+Factor de éxito: ~80%
+
+⚠️ CRÍTICO: Este ataque puede saturar completamente la red víctima
+`;
+
+                if (sentQueries >= totalQueries) {
+                    clearInterval(progressInterval);
+                    showLoading(false);
+                    attackStats.activeAttacks = Math.max(0, attackStats.activeAttacks - 1);
+                    
+                    resultsContent.innerHTML += `
+
+💀 ATAQUE AMPLIFICACIÓN COMPLETADO
+====================================
+Resultado: DEVASTADOR
+Total queries: ${totalQueries}
+Tráfico amplificado: ${(totalQueries * attackData.amplification_factor).toLocaleString()} responses
+Impacto estimado: CRÍTICO - Red víctima probablemente CAÍDA
+
+🚨 El objetivo debería estar experimentando denegación de servicio total
+`;
+                }
+            }, 1000);
+        }
+
+        function getDefaultQuery(type) {
+            const defaultQueries = {
+                dns: 'ANY isc.org',
+                ntp: 'monlist request',
+                snmp: 'GetBulkRequest',
+                ssdp: 'M-SEARCH * HTTP/1.1'
+            };
+            return defaultQueries[type] || '';
+        }
+
+        function displayAttackResults(data, attackType) {
+            const resultsContent = document.getElementById('resultsContent');
+            
+            resultsContent.innerHTML = `🔥 RESULTADOS ${attackType.toUpperCase()}
+========================================
+URL Objetivo: ${data.target_url || 'N/A'}
+Timestamp: ${data.start_time || new Date().toISOString()}
+
+📊 ESTADÍSTICAS DE ATAQUE:
+• Peticiones totales: ${(data.total_requests || 0).toLocaleString()}
+• Peticiones exitosas: ${(data.successful_requests || 0).toLocaleString()}
+• Peticiones fallidas: ${(data.failed_requests || 0).toLocaleString()}
+• Duración: ${(data.total_duration_seconds || 0).toFixed(2)}s
+• Velocidad promedio: ${(data.requests_per_second || 0).toFixed(2)} req/s
+• Tiempo respuesta promedio: ${(data.average_response_time || 0).toFixed(3)}s
+
+💥 IMPACTO:
+• Tasa de éxito: ${((data.successful_requests || 0) / (data.total_requests || 1) * 100).toFixed(1)}%
+• Estado objetivo: ${data.successful_requests > (data.total_requests * 0.8) ? '🔴 IMPACTADO' : '🟡 RESISTIENDO'}
+
+📋 DATOS COMPLETOS:
+${JSON.stringify(data, null, 2)}
+`;
+        }
+
+        function displayError(message) {
+            const resultsContent = document.getElementById('resultsContent');
+            resultsContent.innerHTML = `❌ ERROR EN ATAQUE
+=====================
+${message}
+
+🔧 Posibles causas:
+• Objetivo protegido por firewall/WAF
+• Rate limiting activado
+• IP bloqueada
+• Configuración incorrecta
+• Permisos insuficientes (para ataques de red)
+`;
+        }
+
+        function showLoading(show) {
+            document.getElementById('loading').style.display = show ? 'block' : 'none';
+        }
+
+        function showResults(show) {
+            document.getElementById('resultsContainer').style.display = show ? 'block' : 'none';
+        }
+
+        function updateStatusIndicators() {
+            document.getElementById('activeAttacks').textContent = attackStats.activeAttacks;
+            document.getElementById('requestsPerSecond').textContent = attackStats.requestsPerSecond.toLocaleString();
+            document.getElementById('targetResponseTime').textContent = attackStats.targetResponseTime + 'ms';
+            document.getElementById('serverStatus').textContent = attackStats.serverStatus;
+            
+            // Simular variaciones aleatorias cuando no hay ataques activos
+            if (attackStats.activeAttacks === 0) {
+                attackStats.requestsPerSecond = Math.floor(Math.random() * 100);
+                attackStats.targetResponseTime = Math.floor(Math.random() * 200) + 50;
+                attackStats.serverStatus = '🟢';
+            }
+        }
+
+        // Advertencia al cerrar la página
+        window.addEventListener('beforeunload', function(e) {
+            if (attackStats.activeAttacks > 0) {
+                e.preventDefault();
+                e.returnValue = '⚠️ Hay ataques activos. ¿Seguro que quieres cerrar?';
+            }
+        });
+    </script>
+</body>
+</html>

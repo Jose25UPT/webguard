@@ -1,0 +1,22 @@
+apiVersion: 1
+
+datasources:
+  - name: InfluxDB
+    type: influxdb
+    access: proxy
+    url: http://influxdb:8086
+    database: security_metrics
+    jsonData:
+      version: Flux
+      organization: webguard
+      defaultBucket: security_metrics
+      tlsSkipVerify: true
+    secureJsonData:
+      token: webguard-super-secret-auth-token
+    isDefault: true
+    
+  - name: Prometheus
+    type: prometheus
+    access: proxy
+    url: http://prometheus:9090
+    isDefault: false

@@ -1,16 +1,14 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Vigilant WebGuard - Escáner de Seguridad Web</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vigilant WebGuard - Plataforma de Seguridad Web</title>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <style>
-    /* Estilo Nessus - Colores celestes profesionales */
+    /* Estilo moderno mejorado con gradientes y animaciones */
     :root {
       --primary-blue: #1e3a8a;
       --secondary-blue: #3b82f6;
@@ -20,6 +18,10 @@
       --bg-blue: #f0f9ff;
       --text-blue: #1e3a8a;
       --border-blue: #93c5fd;
+      --cyber-green: #00ff88;
+      --cyber-purple: #8b5cf6;
+      --cyber-red: #ef4444;
+      --cyber-orange: #f97316;
     }
     
     body {
@@ -150,61 +152,195 @@
   </style>
 </head>
 <body class="bg-gray-50 text-gray-800 font-sans">
-  <div class="flex h-screen">
-    <!-- Sidebar mejorado -->
-    <aside class="w-72 bg-white border-r-2 border-gray-200 shadow-xl flex flex-col">
-      <div class="gradient-bg p-6 text-white">
-        <div class="flex items-center space-x-3 mb-6">
+  <!-- Header con navegación horizontal -->
+  <header class="bg-gradient-to-r from-blue-900 via-blue-700 to-blue-900 text-white shadow-2xl">
+    <div class="container mx-auto px-4">
+      <!-- Barra superior -->
+      <div class="flex items-center justify-between py-4">
+        <div class="flex items-center space-x-4">
           <i class="fas fa-shield-alt text-3xl"></i>
           <div>
-            <h1 class="text-xl font-bold">Vigilant WebGuard</h1>
-            <p class="text-sm opacity-80">Escáner de Seguridad Web</p>
+            <h1 class="text-2xl font-bold">Vigilant WebGuard</h1>
+            <p class="text-sm opacity-80">Plataforma de Seguridad Web</p>
           </div>
         </div>
-        <div class="bg-white bg-opacity-20 rounded-lg p-3">
-          <div class="flex items-center space-x-2">
+        
+        <div class="flex items-center space-x-4">
+          <div class="flex items-center space-x-2 bg-white bg-opacity-20 rounded-lg px-3 py-2">
             <div class="w-3 h-3 bg-green-400 rounded-full pulse-animation"></div>
-            <span class="text-sm">Sistema Operativo</span>
+            <span class="text-sm">Sistema Activo</span>
           </div>
+          <div class="text-sm opacity-80" id="headerTime">Cargando...</div>
         </div>
       </div>
       
-      <nav class="flex-1 p-4 space-y-2">
-        <div class="mb-4">
-          <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Panel Principal</h3>
-          <button onclick="showSection('scanner')" class="nav-btn w-full flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-50 transition-colors text-left">
-            <i class="fas fa-search text-blue-600"></i>
-            <span class="font-medium">Escáner Web</span>
+      <!-- Navegación horizontal -->
+      <nav class="border-t border-white border-opacity-20">
+        <div class="flex space-x-1 py-2">
+          <button onclick="showMainTab('dashboard')" class="main-nav-tab active px-6 py-3 rounded-t-lg font-medium transition-all hover:bg-white hover:bg-opacity-10">
+            <i class="fas fa-tachometer-alt mr-2"></i>Dashboard
           </button>
-        </div>
-        
-        <div class="mb-4">
-          <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Centro de Operaciones</h3>
-          <button onclick="showDashboard()" class="nav-btn w-full flex items-center space-x-3 p-3 rounded-lg hover:bg-purple-50 transition-colors text-left">
-            <i class="fas fa-tachometer-alt text-purple-600"></i>
-            <span class="font-medium">SOC Dashboard</span>
+          <button onclick="showMainTab('scanner')" class="main-nav-tab px-6 py-3 rounded-t-lg font-medium transition-all hover:bg-white hover:bg-opacity-10">
+            <i class="fas fa-search mr-2"></i>Escáner
           </button>
-          <button onclick="showSection('reports')" class="nav-btn w-full flex items-center space-x-3 p-3 rounded-lg hover:bg-green-50 transition-colors text-left">
-            <i class="fas fa-chart-line text-green-600"></i>
-            <span class="font-medium">Reportes</span>
+          <button onclick="openGrafanaDashboard()" class="main-nav-tab px-6 py-3 rounded-t-lg font-medium transition-all hover:bg-white hover:bg-opacity-10">
+            <i class="fas fa-chart-area mr-2"></i>Grafana Dashboard
           </button>
-          <button onclick="showSection('history')" class="nav-btn w-full flex items-center space-x-3 p-3 rounded-lg hover:bg-orange-50 transition-colors text-left">
-            <i class="fas fa-history text-orange-600"></i>
-            <span class="font-medium">Historial</span>
+          <button onclick="showMainTab('attacks')" class="main-nav-tab px-6 py-3 rounded-t-lg font-medium transition-all hover:bg-white hover:bg-opacity-10">
+            <i class="fas fa-bullseye mr-2"></i>Ataques
+          </button>
+          <button onclick="showMainTab('reports')" class="main-nav-tab px-6 py-3 rounded-t-lg font-medium transition-all hover:bg-white hover:bg-opacity-10">
+            <i class="fas fa-chart-line mr-2"></i>Reportes
+          </button>
+          <button onclick="showMainTab('tools')" class="main-nav-tab px-6 py-3 rounded-t-lg font-medium transition-all hover:bg-white hover:bg-opacity-10">
+            <i class="fas fa-tools mr-2"></i>Herramientas
           </button>
         </div>
       </nav>
-      
-      <footer class="p-4 border-t border-gray-200">
-        <div class="text-center">
-          <p class="text-xs text-gray-500">&copy; 2025 Vigilant WebGuard</p>
-          <p class="text-xs text-gray-400">Versión 2.0.0</p>
-        </div>
-      </footer>
-    </aside>
+    </div>
+  </header>
 
+  <!-- Contenido principal sin sidebar -->
+  <div class="min-h-screen">
     <!-- Main content -->
-    <main class="flex-1 overflow-y-auto">
+    <main class="container mx-auto px-4 py-6">
+      <!-- Dashboard Principal -->
+      <section id="dashboard" class="main-tab-content">
+        <div class="mb-6">
+          <h2 class="text-3xl font-bold text-gray-800 mb-2">Centro de Operaciones de Seguridad</h2>
+          <p class="text-gray-600">Monitoreo y análisis de seguridad en tiempo real</p>
+        </div>
+        
+        <!-- Métricas principales -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <div class="modern-card p-6 rounded-lg">
+            <div class="flex items-center space-x-3">
+              <i class="fas fa-shield-alt text-green-500 text-2xl"></i>
+              <div>
+                <div class="text-2xl font-bold text-green-500 stat-counter" id="activeDefenses">12</div>
+                <div class="text-sm text-gray-600">Defensas Activas</div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="modern-card p-6 rounded-lg">
+            <div class="flex items-center space-x-3">
+              <i class="fas fa-exclamation-triangle text-red-500 text-2xl"></i>
+              <div>
+                <div class="text-2xl font-bold text-red-500 stat-counter" id="criticalAlerts">3</div>
+                <div class="text-sm text-gray-600">Alertas Críticas</div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="modern-card p-6 rounded-lg">
+            <div class="flex items-center space-x-3">
+              <i class="fas fa-network-wired text-blue-500 text-2xl"></i>
+              <div>
+                <div class="text-2xl font-bold text-blue-500 stat-counter" id="networkTraffic">1.2TB</div>
+                <div class="text-sm text-gray-600">Tráfico Analizado</div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="modern-card p-6 rounded-lg">
+            <div class="flex items-center space-x-3">
+              <i class="fas fa-clock text-yellow-500 text-2xl"></i>
+              <div>
+                <div class="text-2xl font-bold text-yellow-500 stat-counter" id="responseTime">2.3s</div>
+                <div class="text-sm text-gray-600">Tiempo de Respuesta</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Accesos rápidos -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+          <div class="modern-card p-6 rounded-lg">
+            <div class="flex items-center space-x-3 mb-4">
+              <i class="fas fa-shield-alt text-blue-600 text-3xl"></i>
+              <div>
+                <h3 class="font-bold text-lg">Security Suite</h3>
+                <p class="text-gray-600 text-sm">Herramientas avanzadas de exploits</p>
+              </div>
+            </div>
+            <button onclick="openEnhancedSuite()" class="w-full bg-gradient-to-r from-blue-500 to-cyan-500 text-white py-3 rounded-lg font-bold hover:from-blue-600 hover:to-cyan-600">
+              🛡️ Abrir Security Suite
+            </button>
+          </div>
+          
+          <div class="modern-card p-6 rounded-lg">
+            <div class="flex items-center space-x-3 mb-4">
+              <i class="fas fa-bomb text-red-600 text-3xl"></i>
+              <div>
+                <h3 class="font-bold text-lg">DDoS & Ataques</h3>
+                <p class="text-gray-600 text-sm">Herramientas de testing de estrés</p>
+              </div>
+            </div>
+            <button onclick="openDDoSTools()" class="w-full bg-gradient-to-r from-red-500 to-pink-500 text-white py-3 rounded-lg font-bold hover:from-red-600 hover:to-pink-600">
+              💥 Abrir DDoS Tools
+            </button>
+          </div>
+          
+          <div class="modern-card p-6 rounded-lg">
+            <div class="flex items-center space-x-3 mb-4">
+              <i class="fas fa-cogs text-green-600 text-3xl"></i>
+              <div>
+                <h3 class="font-bold text-lg">Configuración</h3>
+                <p class="text-gray-600 text-sm">Gestión de API keys</p>
+              </div>
+            </div>
+            <button onclick="openConfiguration()" class="w-full bg-gradient-to-r from-green-500 to-teal-500 text-white py-3 rounded-lg font-bold hover:from-green-600 hover:to-teal-600">
+              ⚙️ Abrir Configuración
+            </button>
+          </div>
+        </div>
+        
+        <!-- Gráficos y actividad reciente -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div class="modern-card p-6 rounded-lg">
+            <h3 class="text-lg font-semibold mb-4">📊 Uso de Recursos del Sistema</h3>
+            <div class="space-y-4">
+              <div>
+                <div class="flex justify-between text-sm mb-1">
+                  <span>CPU</span>
+                  <span id="dashCpuUsage">45%</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2">
+                  <div id="dashCpuBar" class="bg-blue-500 h-2 rounded-full transition-all duration-500" style="width: 45%"></div>
+                </div>
+              </div>
+              
+              <div>
+                <div class="flex justify-between text-sm mb-1">
+                  <span>Memoria</span>
+                  <span id="dashMemoryUsage">62%</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2">
+                  <div id="dashMemoryBar" class="bg-green-500 h-2 rounded-full transition-all duration-500" style="width: 62%"></div>
+                </div>
+              </div>
+              
+              <div>
+                <div class="flex justify-between text-sm mb-1">
+                  <span>Disco</span>
+                  <span id="dashDiskUsage">38%</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2">
+                  <div id="dashDiskBar" class="bg-yellow-500 h-2 rounded-full transition-all duration-500" style="width: 38%"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="modern-card p-6 rounded-lg">
+            <h3 class="text-lg font-semibold mb-4">🚨 Feed de Actividad en Tiempo Real</h3>
+            <div id="dashActivityFeed" class="terminal-text p-4 rounded-lg h-64 overflow-y-auto text-xs">
+              <!-- El contenido se llenará dinámicamente -->
+            </div>
+          </div>
+        </div>
+      </section>
       <!-- Sección Principal: Escáner Web -->
       <section id="scanner" class="section-content p-6">
         <div class="mb-6">
@@ -441,6 +577,424 @@
                 </tr>
               </tbody>
             </table>
+          </div>
+        </div>
+      </section>
+      
+      <!-- Sección Oculta: Objetivos de Ataque -->
+      <section id="attackTargets" class="section-content p-6 hidden">
+        <div class="mb-6">
+          <div class="flex items-center space-x-3 mb-2">
+            <i class="fas fa-bullseye text-red-600 text-2xl"></i>
+            <h2 class="text-2xl font-bold text-gray-800">🎯 Objetivos de Ataque</h2>
+          </div>
+          <p class="text-gray-600">Centro de operaciones para gestionar y ejecutar ataques de testing</p>
+        </div>
+        
+        <!-- Panel de Control Principal -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+          <div class="lg:col-span-2">
+            <!-- Formulario de Objetivo -->
+            <div class="bg-white p-6 rounded-lg shadow border-l-4 border-red-500">
+              <h3 class="text-lg font-bold mb-4 text-red-700">🎯 Configurar Objetivo</h3>
+              <div class="space-y-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">URL Objetivo</label>
+                  <input id="attackTarget" type="url" placeholder="https://objetivo.com" 
+                    class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Tipo de Ataque</label>
+                    <select id="attackType" class="w-full p-3 border border-gray-300 rounded-lg">
+                      <option value="ddos">DDoS Testing</option>
+                      <option value="vuln">Vulnerability Scan</option>
+                      <option value="pentest">Penetration Test</option>
+                      <option value="stress">Stress Test</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Intensidad</label>
+                    <select id="attackIntensity" class="w-full p-3 border border-gray-300 rounded-lg">
+                      <option value="low">🟡 Baja</option>
+                      <option value="medium">🟠 Media</option>
+                      <option value="high">🔴 Alta</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Herramientas Rápidas -->
+            <div class="bg-white p-6 rounded-lg shadow mt-4">
+              <h3 class="text-lg font-bold mb-4 text-gray-800">⚡ Acciones Rápidas</h3>
+              <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                <button onclick="quickAttack('ddos')" class="quick-attack-btn bg-red-500 hover:bg-red-600 text-white p-3 rounded-lg text-sm font-medium transition-all">
+                  💥 DDoS
+                </button>
+                <button onclick="quickAttack('vuln')" class="quick-attack-btn bg-orange-500 hover:bg-orange-600 text-white p-3 rounded-lg text-sm font-medium transition-all">
+                  🔍 Vuln Scan
+                </button>
+                <button onclick="quickAttack('exploit')" class="quick-attack-btn bg-purple-500 hover:bg-purple-600 text-white p-3 rounded-lg text-sm font-medium transition-all">
+                  🛡️ Exploits
+                </button>
+                <button onclick="quickAttack('stress')" class="quick-attack-btn bg-yellow-500 hover:bg-yellow-600 text-white p-3 rounded-lg text-sm font-medium transition-all">
+                  ⚡ Stress
+                </button>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Panel de Estado -->
+          <div class="space-y-4">
+            <!-- Estado del Sistema -->
+            <div class="bg-white p-4 rounded-lg shadow">
+              <h4 class="font-bold text-gray-800 mb-3 flex items-center">
+                <i class="fas fa-heartbeat text-green-500 mr-2"></i>
+                Estado del Sistema
+              </h4>
+              <div class="space-y-2 text-sm">
+                <div class="flex justify-between">
+                  <span>CPU:</span>
+                  <span id="cpuUsage" class="font-bold text-green-600">12%</span>
+                </div>
+                <div class="flex justify-between">
+                  <span>RAM:</span>
+                  <span id="ramUsage" class="font-bold text-blue-600">45%</span>
+                </div>
+                <div class="flex justify-between">
+                  <span>Red:</span>
+                  <span id="networkStatus" class="font-bold text-green-600">Estable</span>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Objetivos Recientes -->
+            <div class="bg-white p-4 rounded-lg shadow">
+              <h4 class="font-bold text-gray-800 mb-3">🎯 Objetivos Recientes</h4>
+              <div id="recentTargets" class="space-y-2 text-sm">
+                <div class="p-2 bg-gray-50 rounded text-xs">
+                  <div class="font-medium">test.example.com</div>
+                  <div class="text-gray-500">DDoS - Completado</div>
+                </div>
+                <div class="p-2 bg-gray-50 rounded text-xs">
+                  <div class="font-medium">demo.vulnerable.app</div>
+                  <div class="text-gray-500">Vuln Scan - En progreso</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Panel de Ejecución -->
+        <div class="bg-gradient-to-r from-red-600 to-red-800 p-6 rounded-lg shadow-lg text-white mb-6">
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="text-xl font-bold mb-2">🚀 Centro de Comando</h3>
+              <p class="text-red-100">Ejecutar operaciones de testing en objetivos autorizados</p>
+            </div>
+            <div class="space-x-3">
+              <button onclick="launchAttack()" id="launchBtn" 
+                class="bg-white text-red-600 px-6 py-3 rounded-lg font-bold hover:bg-gray-100 transition-all transform hover:scale-105">
+                🔥 EJECUTAR ATAQUE
+              </button>
+              <button onclick="stopAllAttacks()" 
+                class="bg-red-500 text-white px-4 py-3 rounded-lg font-bold hover:bg-red-400 transition-all">
+                ⛔ DETENER TODO
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Panel de Resultados en Tiempo Real -->
+        <div class="bg-white p-6 rounded-lg shadow">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-bold text-gray-800">📊 Monitor en Tiempo Real</h3>
+            <div class="flex space-x-2">
+              <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">En línea</span>
+              <button onclick="clearMonitor()" class="text-gray-500 hover:text-gray-700">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </div>
+          
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Log de Actividad -->
+            <div>
+              <h4 class="font-semibold text-gray-700 mb-3">📋 Log de Actividad</h4>
+              <div id="activityLog" class="bg-gray-900 text-green-400 p-4 rounded-lg h-64 overflow-y-auto font-mono text-sm">
+                <div>[INFO] Sistema iniciado</div>
+                <div>[INFO] Esperando comandos...</div>
+              </div>
+            </div>
+            
+            <!-- Estadísticas del Ataque -->
+            <div>
+              <h4 class="font-semibold text-gray-700 mb-3">📈 Estadísticas</h4>
+              <div class="space-y-3">
+                <div class="bg-gray-50 p-3 rounded">
+                  <div class="flex justify-between items-center">
+                    <span class="text-sm font-medium">Requests Enviados:</span>
+                    <span id="requestCount" class="text-lg font-bold text-blue-600">0</span>
+                  </div>
+                  <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
+                    <div id="requestBar" class="bg-blue-600 h-2 rounded-full" style="width: 0%"></div>
+                  </div>
+                </div>
+                
+                <div class="bg-gray-50 p-3 rounded">
+                  <div class="flex justify-between items-center">
+                    <span class="text-sm font-medium">Tiempo de Respuesta:</span>
+                    <span id="responseTime" class="text-lg font-bold text-green-600">0ms</span>
+                  </div>
+                </div>
+                
+                <div class="bg-gray-50 p-3 rounded">
+                  <div class="flex justify-between items-center">
+                    <span class="text-sm font-medium">Vulnerabilidades:</span>
+                    <span id="vulnCount" class="text-lg font-bold text-red-600">0</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      
+      <!-- Sección de Grafana Metrics -->
+      <section id="grafana" class="section-content p-6 hidden">
+        <div class="mb-6">
+          <div class="flex items-center space-x-3 mb-2">
+            <i class="fas fa-chart-area text-blue-600 text-2xl"></i>
+            <h2 class="text-2xl font-bold text-gray-800">📊 Grafana Metrics Dashboard</h2>
+          </div>
+          <p class="text-gray-600">Sistema de métricas y monitoreo en tiempo real integrado</p>
+        </div>
+        
+        <!-- Panel de Control de Métricas -->
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-6">
+          <!-- Métricas Principales -->
+          <div class="bg-gradient-to-br from-blue-500 to-blue-700 p-6 rounded-lg shadow-lg text-white">
+            <div class="flex items-center justify-between">
+              <div>
+                <div class="text-2xl font-bold" id="grafana-requests">1,234</div>
+                <div class="text-blue-100 text-sm">Requests/min</div>
+              </div>
+              <i class="fas fa-chart-line text-3xl text-blue-200"></i>
+            </div>
+            <div class="mt-3">
+              <div class="text-xs text-blue-100">↗️ +15% desde ayer</div>
+            </div>
+          </div>
+          
+          <div class="bg-gradient-to-br from-green-500 to-green-700 p-6 rounded-lg shadow-lg text-white">
+            <div class="flex items-center justify-between">
+              <div>
+                <div class="text-2xl font-bold" id="grafana-uptime">99.9%</div>
+                <div class="text-green-100 text-sm">Uptime</div>
+              </div>
+              <i class="fas fa-heartbeat text-3xl text-green-200"></i>
+            </div>
+            <div class="mt-3">
+              <div class="text-xs text-green-100">✅ 720 horas activo</div>
+            </div>
+          </div>
+          
+          <div class="bg-gradient-to-br from-orange-500 to-orange-700 p-6 rounded-lg shadow-lg text-white">
+            <div class="flex items-center justify-between">
+              <div>
+                <div class="text-2xl font-bold" id="grafana-alerts">12</div>
+                <div class="text-orange-100 text-sm">Alertas Activas</div>
+              </div>
+              <i class="fas fa-exclamation-triangle text-3xl text-orange-200"></i>
+            </div>
+            <div class="mt-3">
+              <div class="text-xs text-orange-100">⚠️ 3 críticas</div>
+            </div>
+          </div>
+          
+          <div class="bg-gradient-to-br from-purple-500 to-purple-700 p-6 rounded-lg shadow-lg text-white">
+            <div class="flex items-center justify-between">
+              <div>
+                <div class="text-2xl font-bold" id="grafana-cpu">45%</div>
+                <div class="text-purple-100 text-sm">CPU Usage</div>
+              </div>
+              <i class="fas fa-microchip text-3xl text-purple-200"></i>
+            </div>
+            <div class="mt-3">
+              <div class="text-xs text-purple-100">💻 8 cores activos</div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Paneles de Gráficos -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          <!-- Gráfico de Red -->
+          <div class="bg-white p-6 rounded-lg shadow-lg border border-gray-200">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-lg font-bold text-gray-800">🌐 Tráfico de Red</h3>
+              <div class="flex space-x-2">
+                <button onclick="refreshNetworkChart()" class="text-blue-600 hover:text-blue-800">
+                  <i class="fas fa-sync-alt"></i>
+                </button>
+                <select id="networkTimeframe" class="text-xs border rounded px-2 py-1">
+                  <option value="1h">Última hora</option>
+                  <option value="24h" selected>Últimas 24h</option>
+                  <option value="7d">Última semana</option>
+                </select>
+              </div>
+            </div>
+            <div class="h-64">
+              <canvas id="networkChart"></canvas>
+            </div>
+            <div class="mt-4 grid grid-cols-3 gap-4 text-center text-sm">
+              <div>
+                <div class="font-bold text-blue-600" id="network-in">125.3 MB/s</div>
+                <div class="text-gray-500">Entrada</div>
+              </div>
+              <div>
+                <div class="font-bold text-green-600" id="network-out">89.7 MB/s</div>
+                <div class="text-gray-500">Salida</div>
+              </div>
+              <div>
+                <div class="font-bold text-purple-600" id="network-latency">23ms</div>
+                <div class="text-gray-500">Latencia</div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Gráfico de Sistema -->
+          <div class="bg-white p-6 rounded-lg shadow-lg border border-gray-200">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-lg font-bold text-gray-800">⚡ Recursos del Sistema</h3>
+              <div class="flex space-x-2">
+                <button onclick="refreshSystemChart()" class="text-green-600 hover:text-green-800">
+                  <i class="fas fa-sync-alt"></i>
+                </button>
+                <span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">LIVE</span>
+              </div>
+            </div>
+            <div class="h-64">
+              <canvas id="systemChart"></canvas>
+            </div>
+            <div class="mt-4 grid grid-cols-2 gap-4">
+              <div class="text-center">
+                <div class="flex items-center justify-center space-x-2">
+                  <div class="w-3 h-3 bg-red-500 rounded-full"></div>
+                  <span class="text-sm font-medium">CPU</span>
+                </div>
+                <div class="text-lg font-bold text-red-600" id="system-cpu">45%</div>
+              </div>
+              <div class="text-center">
+                <div class="flex items-center justify-center space-x-2">
+                  <div class="w-3 h-3 bg-blue-500 rounded-full"></div>
+                  <span class="text-sm font-medium">Memoria</span>
+                </div>
+                <div class="text-lg font-bold text-blue-600" id="system-memory">72%</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Panel de Seguridad y Alertas -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+          <!-- Alertas de Seguridad -->
+          <div class="bg-white p-6 rounded-lg shadow-lg border border-gray-200">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-lg font-bold text-gray-800">🚨 Alertas Recientes</h3>
+              <span class="text-xs bg-red-100 text-red-800 px-2 py-1 rounded">12 activas</span>
+            </div>
+            <div id="securityAlerts" class="space-y-3 max-h-48 overflow-y-auto">
+              <!-- Alertas se cargarán dinámicamente -->
+            </div>
+            <button onclick="loadSecurityAlerts()" class="w-full mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 text-sm">
+              Cargar Más Alertas
+            </button>
+          </div>
+          
+          <!-- Métricas de Vulnerabilidades -->
+          <div class="bg-white p-6 rounded-lg shadow-lg border border-gray-200">
+            <h3 class="text-lg font-bold text-gray-800 mb-4">🔍 Detección de Vulnerabilidades</h3>
+            <div class="h-48">
+              <canvas id="vulnerabilityChart"></canvas>
+            </div>
+            <div class="mt-4 text-center">
+              <div class="text-2xl font-bold text-orange-600" id="total-vulns">47</div>
+              <div class="text-sm text-gray-500">Total detectadas hoy</div>
+            </div>
+          </div>
+          
+          <!-- Estado de Servicios -->
+          <div class="bg-white p-6 rounded-lg shadow-lg border border-gray-200">
+            <h3 class="text-lg font-bold text-gray-800 mb-4">🛡️ Estado de Servicios</h3>
+            <div id="serviceStatus" class="space-y-3">
+              <!-- Estados se cargarán dinámicamente -->
+            </div>
+            <div class="mt-4 pt-4 border-t border-gray-200">
+              <div class="text-center">
+                <div class="text-lg font-bold text-green-600">98.7%</div>
+                <div class="text-xs text-gray-500">Disponibilidad Global</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Panel de Logs en Tiempo Real -->
+        <div class="bg-white p-6 rounded-lg shadow-lg border border-gray-200">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-bold text-gray-800">📋 Logs del Sistema en Tiempo Real</h3>
+            <div class="flex space-x-2">
+              <button onclick="pauseLogs()" id="pauseLogsBtn" class="px-3 py-1 bg-yellow-500 text-white rounded text-xs hover:bg-yellow-600">
+                ⏸️ Pausar
+              </button>
+              <button onclick="clearLogs()" class="px-3 py-1 bg-red-500 text-white rounded text-xs hover:bg-red-600">
+                🗑️ Limpiar
+              </button>
+              <select id="logLevel" class="text-xs border rounded px-2 py-1">
+                <option value="all">Todos los logs</option>
+                <option value="error">Solo errores</option>
+                <option value="warning">Warnings+</option>
+                <option value="info">Info+</option>
+              </select>
+            </div>
+          </div>
+          <div id="realtimeLogs" class="bg-gray-900 text-green-400 p-4 rounded-lg h-64 overflow-y-auto font-mono text-xs">
+            <!-- Logs se mostrarán aquí -->
+          </div>
+        </div>
+        
+        <!-- Panel de Configuración -->
+        <div class="mt-6 bg-gradient-to-r from-gray-50 to-gray-100 p-6 rounded-lg border border-gray-200">
+          <h3 class="text-lg font-bold text-gray-800 mb-4">⚙️ Configuración de Dashboard</h3>
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Intervalo de Actualización</label>
+              <select id="refreshInterval" class="w-full border border-gray-300 rounded px-3 py-2">
+                <option value="5000">5 segundos</option>
+                <option value="10000" selected>10 segundos</option>
+                <option value="30000">30 segundos</option>
+                <option value="60000">1 minuto</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Tema del Dashboard</label>
+              <select id="dashboardTheme" class="w-full border border-gray-300 rounded px-3 py-2">
+                <option value="light" selected>Claro</option>
+                <option value="dark">Oscuro</option>
+                <option value="auto">Automático</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Acciones</label>
+              <div class="flex space-x-2">
+                <button onclick="exportDashboard()" class="flex-1 px-3 py-2 bg-blue-600 text-white rounded text-sm hover:bg-blue-700">
+                  📊 Exportar
+                </button>
+                <button onclick="resetDashboard()" class="flex-1 px-3 py-2 bg-gray-600 text-white rounded text-sm hover:bg-gray-700">
+                  🔄 Reset
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -1278,14 +1832,825 @@
       showInPageNotification('Listo', 'Interfaz reseteada. Listo para nuevo escaneo.', 'success');
     }
     
+    // Función para abrir Enhanced Security Suite
+    function openEnhancedSuite() {
+      showInPageNotification(
+        'Cargando Security Suite', 
+        'Abriendo herramientas avanzadas de seguridad...', 
+        'info'
+      );
+      
+      setTimeout(() => {
+        window.open('./enhanced-security.html', '_blank');
+      }, 1000);
+    }
+    
+    // Función para abrir DDoS Tools
+    function openDDoSTools() {
+      // Mostrar advertencia antes de abrir
+      if (confirm('⚠️ ADVERTENCIA: Estás a punto de acceder a herramientas de DDoS y ataques. Estas herramientas son extremadamente potentes y solo deben usarse en sistemas propios o con autorización explícita. ¿Continuar?')) {
+        showInPageNotification(
+          'Cargando DDoS Tools', 
+          'Abriendo herramientas de testing de estrés...', 
+          'warning'
+        );
+        
+        setTimeout(() => {
+          window.open('./ddos-tools.html', '_blank');
+        }, 1000);
+      }
+    }
+    
+    // Función para abrir configuración
+    function openConfiguration() {
+      showInPageNotification(
+        'Configuración', 
+        'Abriendo panel de configuración de API keys...', 
+        'info'
+      );
+      
+      setTimeout(() => {
+        window.open('./config.html', '_blank');
+      }, 1000);
+    }
+    
+    // Función para mostrar recomendaciones del AI Assistant
+    function showAIRecommendations() {
+      showInPageNotification(
+        'AI Assistant', 
+        'Analizando patrones de seguridad y generando recomendaciones...', 
+        'info'
+      );
+      
+      // Simular análisis del AI
+      setTimeout(() => {
+        const recommendations = [
+          '🛡️ Implementar headers de seguridad adicionales',
+          '🔒 Activar HTTPS estricto en todo el sitio', 
+          '🔍 Configurar monitoreo de integridad de archivos',
+          '⚡ Optimizar configuración de firewall',
+          '📊 Establecer alertas de seguridad automatizadas'
+        ];
+        
+        const randomRec = recommendations[Math.floor(Math.random() * recommendations.length)];
+        showInPageNotification(
+          'Recomendación AI', 
+          randomRec, 
+          'info'
+        );
+      }, 2000);
+    }
+    
+    // Funciones para objetivos de ataque
+    function quickAttack(type) {
+      const target = document.getElementById('attackTarget').value;
+      if (!target) {
+        showInPageNotification('Error', 'Por favor ingresa una URL objetivo', 'warning');
+        return;
+      }
+      
+      const attackTypes = {
+        'ddos': '💥 DDoS Attack',
+        'vuln': '🔍 Vulnerability Scan',
+        'exploit': '🛡️ Exploit Testing',
+        'stress': '⚡ Stress Test'
+      };
+      
+      showInPageNotification(
+        'Iniciando Ataque',
+        `${attackTypes[type]} en ${target}`,
+        'warning'
+      );
+      
+      // Simular ataque
+      startAttackSimulation(type, target);
+    }
+    
+    function launchAttack() {
+      const target = document.getElementById('attackTarget').value;
+      const attackType = document.getElementById('attackType').value;
+      const intensity = document.getElementById('attackIntensity').value;
+      
+      if (!target) {
+        showInPageNotification('Error', 'Por favor ingresa una URL objetivo', 'warning');
+        return;
+      }
+      
+      const intensityNames = {
+        'low': '🟡 Baja',
+        'medium': '🟠 Media',
+        'high': '🔴 Alta'
+      };
+      
+      showInPageNotification(
+        '🚀 ATAQUE INICIADO',
+        `${attackType.toUpperCase()} en ${target} con intensidad ${intensityNames[intensity]}`,
+        'warning'
+      );
+      
+      // Iniciar simulación de ataque completo
+      startFullAttackSimulation(attackType, target, intensity);
+    }
+    
+    function stopAllAttacks() {
+      clearInterval(window.attackInterval);
+      clearInterval(window.statsInterval);
+      
+      document.getElementById('activityLog').innerHTML = `
+        <div>[INFO] Sistema iniciado</div>
+        <div>[WARNING] Todos los ataques han sido detenidos</div>
+        <div>[INFO] Esperando comandos...</div>
+      `;
+      
+      showInPageNotification('⛔ ATAQUES DETENIDOS', 'Todas las operaciones han sido canceladas', 'info');
+    }
+    
+    function startAttackSimulation(type, target) {
+      const log = document.getElementById('activityLog');
+      const requestCount = document.getElementById('requestCount');
+      const requestBar = document.getElementById('requestBar');
+      const responseTime = document.getElementById('responseTime');
+      const vulnCount = document.getElementById('vulnCount');
+      
+      let requests = 0;
+      let vulnerabilities = 0;
+      
+      window.attackInterval = setInterval(() => {
+        requests += Math.floor(Math.random() * 50) + 10;
+        const currentTime = new Date().toLocaleTimeString();
+        
+        // Actualizar log
+        const logEntry = document.createElement('div');
+        logEntry.textContent = `[${currentTime}] ${type.toUpperCase()}: ${requests} requests sent to ${target}`;
+        log.appendChild(logEntry);
+        
+        // Scroll al final
+        log.scrollTop = log.scrollHeight;
+        
+        // Actualizar estadísticas
+        requestCount.textContent = requests;
+        requestBar.style.width = Math.min((requests / 1000) * 100, 100) + '%';
+        responseTime.textContent = Math.floor(Math.random() * 500) + 50 + 'ms';
+        
+        // Simular detección de vulnerabilidades
+        if (Math.random() > 0.8) {
+          vulnerabilities++;
+          vulnCount.textContent = vulnerabilities;
+          
+          const vulnEntry = document.createElement('div');
+          vulnEntry.textContent = `[${currentTime}] VULNERABILITY FOUND: ${getRandomVulnerability()}`;
+          vulnEntry.style.color = '#ef4444';
+          log.appendChild(vulnEntry);
+        }
+        
+        // Detener después de 30 segundos
+        if (requests > 1000) {
+          clearInterval(window.attackInterval);
+          const stopEntry = document.createElement('div');
+          stopEntry.textContent = `[${currentTime}] ATTACK COMPLETED: ${requests} total requests`;
+          stopEntry.style.color = '#10b981';
+          log.appendChild(stopEntry);
+          
+          showInPageNotification('Ataque Completado', `${requests} requests enviados exitosamente`, 'success');
+        }
+      }, 1000);
+    }
+    
+    function startFullAttackSimulation(type, target, intensity) {
+      const log = document.getElementById('activityLog');
+      const multiplier = intensity === 'high' ? 3 : intensity === 'medium' ? 2 : 1;
+      
+      // Limpiar log
+      log.innerHTML = `
+        <div>[INFO] Inicializando ataque ${type.toUpperCase()}</div>
+        <div>[INFO] Objetivo: ${target}</div>
+        <div>[INFO] Intensidad: ${intensity.toUpperCase()}</div>
+      `;
+      
+      let phase = 1;
+      const phases = [
+        'Reconocimiento del objetivo',
+        'Estableciendo conexiones',
+        'Ejecutando ataques principales',
+        'Analizando respuestas',
+        'Finalizando operación'
+      ];
+      
+      window.attackInterval = setInterval(() => {
+        const currentTime = new Date().toLocaleTimeString();
+        
+        if (phase <= phases.length) {
+          const phaseEntry = document.createElement('div');
+          phaseEntry.textContent = `[${currentTime}] FASE ${phase}: ${phases[phase-1]}`;
+          phaseEntry.style.color = '#3b82f6';
+          log.appendChild(phaseEntry);
+          
+          // Agregar actividad de la fase
+          for (let i = 0; i < multiplier; i++) {
+            setTimeout(() => {
+              const activity = document.createElement('div');
+              activity.textContent = `[${currentTime}] ${getRandomActivity(type)}`;
+              log.appendChild(activity);
+              log.scrollTop = log.scrollHeight;
+            }, i * 300);
+          }
+          
+          phase++;
+        } else {
+          clearInterval(window.attackInterval);
+          const completedEntry = document.createElement('div');
+          completedEntry.textContent = `[${currentTime}] OPERACIÓN COMPLETADA EXITOSAMENTE`;
+          completedEntry.style.color = '#10b981';
+          completedEntry.style.fontWeight = 'bold';
+          log.appendChild(completedEntry);
+          
+          showInPageNotification('🎯 MISIÓN COMPLETADA', 'Operación de testing finalizada exitosamente', 'success');
+        }
+      }, 3000);
+    }
+    
+    function clearMonitor() {
+      document.getElementById('activityLog').innerHTML = `
+        <div>[INFO] Sistema iniciado</div>
+        <div>[INFO] Monitor limpiado</div>
+        <div>[INFO] Esperando comandos...</div>
+      `;
+      
+      document.getElementById('requestCount').textContent = '0';
+      document.getElementById('requestBar').style.width = '0%';
+      document.getElementById('responseTime').textContent = '0ms';
+      document.getElementById('vulnCount').textContent = '0';
+      
+      showInPageNotification('Monitor Limpiado', 'Log de actividad reseteado', 'info');
+    }
+    
+    function getRandomVulnerability() {
+      const vulns = [
+        'SQL Injection detected',
+        'XSS vulnerability found',
+        'Open redirect discovered',
+        'CSRF token missing',
+        'Insecure HTTP headers',
+        'Directory traversal possible',
+        'Weak authentication detected'
+      ];
+      return vulns[Math.floor(Math.random() * vulns.length)];
+    }
+    
+    function getRandomActivity(type) {
+      const activities = {
+        'ddos': [
+          'Sending HTTP flood packets',
+          'TCP SYN flood in progress',
+          'UDP flood initiated',
+          'Slowloris attack active',
+          'Connection exhaustion attempt'
+        ],
+        'vuln': [
+          'Scanning for SQL injection',
+          'Testing XSS vectors',
+          'Checking for CSRF vulnerabilities',
+          'Analyzing authentication bypass',
+          'Probing for file inclusion bugs'
+        ],
+        'pentest': [
+          'Enumerating services',
+          'Testing privilege escalation',
+          'Attempting lateral movement',
+          'Exploiting known CVEs',
+          'Gathering sensitive data'
+        ],
+        'stress': [
+          'Load testing endpoints',
+          'Memory stress testing',
+          'CPU intensive operations',
+          'Database query flooding',
+          'File system stress test'
+        ]
+      };
+      
+      const typeActivities = activities[type] || activities['vuln'];
+      return typeActivities[Math.floor(Math.random() * typeActivities.length)];
+    }
+    
+    // Funciones para navegación horizontal principal
+    function showMainTab(tabName) {
+      // Ocultar todos los contenidos de tabs
+      document.querySelectorAll('.main-tab-content, .section-content').forEach(content => {
+        content.classList.add('hidden');
+      });
+      
+      // Quitar clase active de todas las tabs horizontales
+      document.querySelectorAll('.main-nav-tab').forEach(tab => {
+        tab.classList.remove('active');
+      });
+      
+      // Mostrar contenido seleccionado
+      const targetSection = document.getElementById(tabName);
+      if (targetSection) {
+        targetSection.classList.remove('hidden');
+      }
+      
+      // Activar tab seleccionada
+      event.target.classList.add('active');
+      
+      // Actualizar hora en header
+      updateHeaderTime();
+      
+      // Inicializar contenido específico de la tab
+      initializeMainTabContent(tabName);
+    }
+    
+    // Inicializar contenido específico de cada tab principal
+    function initializeMainTabContent(tabName) {
+      switch(tabName) {
+        case 'dashboard':
+          updateDashboardMetrics();
+          break;
+        case 'scanner':
+          loadCleanResults();
+          break;
+        case 'grafana':
+          initializeGrafanaCharts();
+          break;
+        case 'attacks':
+          initializeAttacks();
+          break;
+        case 'tools':
+          initializeTools();
+          break;
+      }
+    }
+    
+    // Actualizar métricas del dashboard
+    function updateDashboardMetrics() {
+      // Actualizar contadores dinámicos
+      const metrics = {
+        'activeDefenses': Math.floor(Math.random() * 20) + 10,
+        'criticalAlerts': Math.floor(Math.random() * 5) + 1,
+        'networkTraffic': (Math.random() * 2 + 0.5).toFixed(1) + 'TB',
+        'responseTime': (Math.random() * 3 + 1).toFixed(1) + 's'
+      };
+      
+      Object.entries(metrics).forEach(([id, value]) => {
+        const element = document.getElementById(id);
+        if (element) {
+          element.textContent = value;
+        }
+      });
+      
+      updateDashboardActivity();
+    }
+    
+    // Actualizar feed de actividad del dashboard
+    function updateDashboardActivity() {
+      const feed = document.getElementById('dashActivityFeed');
+      if (!feed) return;
+      
+      const activities = [
+        'Security scan completed successfully',
+        'Network traffic analyzed - no threats detected',
+        'Firewall rules updated automatically',
+        'Vulnerability database refreshed',
+        'System health check passed',
+        'Real-time monitoring active',
+        'Alert thresholds configured'
+      ];
+      
+      const timestamp = new Date().toLocaleTimeString();
+      const activity = activities[Math.floor(Math.random() * activities.length)];
+      
+      const entry = document.createElement('div');
+      entry.textContent = `[${timestamp}] ${activity}`;
+      entry.className = 'mb-1';
+      
+      feed.insertBefore(entry, feed.firstChild);
+      
+      // Mantener solo las últimas 15 entradas
+      while (feed.children.length > 15) {
+        feed.removeChild(feed.lastChild);
+      }
+    }
+    
+    // Inicializar gráficos de Grafana
+    function initializeGrafanaCharts() {
+      // Gráfico de red
+      const networkCtx = document.getElementById('networkChart');
+      if (networkCtx && !networkCtx.chart) {
+        networkCtx.chart = new Chart(networkCtx.getContext('2d'), {
+          type: 'line',
+          data: {
+            labels: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00'],
+            datasets: [{
+              label: 'Entrada (MB/s)',
+              data: [125, 132, 145, 138, 142, 155],
+              borderColor: '#3b82f6',
+              backgroundColor: 'rgba(59, 130, 246, 0.1)',
+              tension: 0.4
+            }, {
+              label: 'Salida (MB/s)',
+              data: [89, 95, 102, 98, 105, 112],
+              borderColor: '#10b981',
+              backgroundColor: 'rgba(16, 185, 129, 0.1)',
+              tension: 0.4
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: 'top'
+              }
+            },
+            scales: {
+              y: {
+                beginAtZero: true
+              }
+            }
+          }
+        });
+      }
+      
+      // Gráfico de sistema
+      const systemCtx = document.getElementById('systemChart');
+      if (systemCtx && !systemCtx.chart) {
+        systemCtx.chart = new Chart(systemCtx.getContext('2d'), {
+          type: 'doughnut',
+          data: {
+            labels: ['CPU', 'Memoria'],
+            datasets: [{
+              data: [45, 72],
+              backgroundColor: ['#ef4444', '#3b82f6'],
+              borderWidth: 2
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: 'bottom'
+              }
+            }
+          }
+        });
+      }
+      
+      // Cargar alertas de seguridad
+      loadSecurityAlerts();
+      initializeGrafanaLogs();
+    }
+    
+    // Cargar alertas de seguridad
+    function loadSecurityAlerts() {
+      const alertsContainer = document.getElementById('securityAlerts');
+      if (!alertsContainer) return;
+      
+      const alerts = [
+        { type: 'CRITICAL', message: 'Intento de SQL injection detectado', time: '2 min ago' },
+        { type: 'WARNING', message: 'Tráfico sospechoso desde IP 192.168.1.100', time: '5 min ago' },
+        { type: 'INFO', message: 'Actualización de base de datos completada', time: '10 min ago' },
+        { type: 'CRITICAL', message: 'Múltiples intentos de login fallidos', time: '15 min ago' }
+      ];
+      
+      alertsContainer.innerHTML = alerts.map(alert => {
+        const colorClass = alert.type === 'CRITICAL' ? 'border-red-500 bg-red-50' : 
+                          alert.type === 'WARNING' ? 'border-yellow-500 bg-yellow-50' : 
+                          'border-blue-500 bg-blue-50';
+        
+        return `
+          <div class="p-3 border-l-4 ${colorClass} rounded">
+            <div class="flex justify-between items-start">
+              <div class="text-sm font-medium">${alert.message}</div>
+              <span class="text-xs text-gray-500">${alert.time}</span>
+            </div>
+            <div class="text-xs font-bold mt-1 ${alert.type === 'CRITICAL' ? 'text-red-600' : 
+                                                 alert.type === 'WARNING' ? 'text-yellow-600' : 'text-blue-600'}">
+              ${alert.type}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+    
+    // Inicializar logs de Grafana
+    function initializeGrafanaLogs() {
+      const logsContainer = document.getElementById('realtimeLogs');
+      if (!logsContainer) return;
+      
+      // Limpiar logs existentes
+      logsContainer.innerHTML = '';
+      
+      // Generar logs iniciales
+      const initialLogs = [
+        '[INFO] Sistema de monitoreo iniciado',
+        '[INFO] Conexión a base de datos establecida',
+        '[INFO] Servicios de seguridad activos',
+        '[INFO] Monitoreo en tiempo real habilitado'
+      ];
+      
+      initialLogs.forEach(log => {
+        const logEntry = document.createElement('div');
+        logEntry.textContent = log;
+        logsContainer.appendChild(logEntry);
+      });
+      
+      // Simular logs en tiempo real
+      setInterval(() => {
+        addRandomLog();
+      }, 3000);
+    }
+    
+    // Agregar log aleatorio
+    function addRandomLog() {
+      const logsContainer = document.getElementById('realtimeLogs');
+      if (!logsContainer) return;
+      
+      const logTypes = ['INFO', 'WARNING', 'DEBUG', 'ERROR'];
+      const messages = [
+        'Análisis de tráfico completado',
+        'Actualización de reglas de firewall',
+        'Escaneo de vulnerabilidades programado',
+        'Backup de configuración realizado',
+        'Certificado SSL verificado',
+        'Conexión de base de datos renovada'
+      ];
+      
+      const logType = logTypes[Math.floor(Math.random() * logTypes.length)];
+      const message = messages[Math.floor(Math.random() * messages.length)];
+      const timestamp = new Date().toLocaleTimeString();
+      
+      const logEntry = document.createElement('div');
+      logEntry.textContent = `[${timestamp}] [${logType}] ${message}`;
+      
+      logsContainer.insertBefore(logEntry, logsContainer.firstChild);
+      
+      // Mantener solo los últimos 20 logs
+      while (logsContainer.children.length > 20) {
+        logsContainer.removeChild(logsContainer.lastChild);
+      }
+    }
+    
+    // Funciones para Grafana
+    function refreshNetworkChart() {
+      showInPageNotification('Actualizando', 'Gráfico de red actualizado', 'info');
+    }
+    
+    function refreshSystemChart() {
+      showInPageNotification('Actualizando', 'Gráfico de sistema actualizado', 'info');
+    }
+    
+    function pauseLogs() {
+      const btn = document.getElementById('pauseLogsBtn');
+      if (btn.textContent.includes('Pausar')) {
+        btn.innerHTML = '▶️ Reanudar';
+        showInPageNotification('Logs', 'Logs pausados', 'info');
+      } else {
+        btn.innerHTML = '⏸️ Pausar';
+        showInPageNotification('Logs', 'Logs reanudados', 'info');
+      }
+    }
+    
+    function clearLogs() {
+      const logsContainer = document.getElementById('realtimeLogs');
+      if (logsContainer) {
+        logsContainer.innerHTML = '<div>[INFO] Logs limpiados</div>';
+        showInPageNotification('Logs', 'Historial de logs limpiado', 'info');
+      }
+    }
+    
+    function exportDashboard() {
+      showInPageNotification('Exportando', 'Generando archivo de configuración...', 'info');
+    }
+    
+    function resetDashboard() {
+      showInPageNotification('Reset', 'Dashboard reiniciado a configuración por defecto', 'info');
+    }
+    
+    // Inicializar herramientas
+    function initializeTools() {
+      // Herramientas ya están configuradas con sus funciones
+    }
+    
+    // Inicializar ataques
+    function initializeAttacks() {
+      // Los ataques ya están configurados
+    }
+    
+    // Actualizar hora en header
+    function updateHeaderTime() {
+      const headerTimeElement = document.getElementById('headerTime');
+      if (headerTimeElement) {
+        const now = new Date();
+        headerTimeElement.textContent = now.toLocaleTimeString();
+      }
+    }
+    
     // Ejecutar al cargar
     window.onload = () => {
       updateTime();
-      // Mostrar la sección scanner por defecto
-      showSection('scanner');
-      // Cargar resultados si existen
-      loadCleanResults();
+      updateHeaderTime();
+      
+      // Mostrar dashboard por defecto
+      showMainTab('dashboard');
+      
+      // Actualizar hora cada minuto
+      setInterval(updateHeaderTime, 60000);
+      
+      // Actualizar métricas del dashboard cada 10 segundos
+      setInterval(() => {
+        if (!document.getElementById('dashboard').classList.contains('hidden')) {
+          updateDashboardMetrics();
+        }
+      }, 10000);
+      
+      // Simular actualización de sistema en tiempo real
+      setInterval(() => {
+        const cpuUsage = Math.floor(Math.random() * 30) + 10;
+        const ramUsage = Math.floor(Math.random() * 40) + 30;
+        
+        // Actualizar en diferentes secciones
+        ['cpuUsage', 'dashCpuUsage'].forEach(id => {
+          const element = document.getElementById(id);
+          if (element) element.textContent = cpuUsage + '%';
+        });
+        
+        ['ramUsage', 'dashMemoryUsage'].forEach(id => {
+          const element = document.getElementById(id);
+          if (element) element.textContent = ramUsage + '%';
+        });
+        
+        // Actualizar barras
+        ['cpuBar', 'dashCpuBar'].forEach(id => {
+          const element = document.getElementById(id);
+          if (element) element.style.width = cpuUsage + '%';
+        });
+        
+        ['memoryBar', 'dashMemoryBar'].forEach(id => {
+          const element = document.getElementById(id);
+          if (element) element.style.width = ramUsage + '%';
+        });
+        
+        // Cambiar colores según uso
+        ['cpuUsage', 'dashCpuUsage'].forEach(id => {
+          const element = document.getElementById(id);
+          if (element) {
+            element.className = cpuUsage > 80 ? 'font-bold text-red-600' : 
+                               cpuUsage > 60 ? 'font-bold text-yellow-600' : 'font-bold text-green-600';
+          }
+        });
+        
+        ['ramUsage', 'dashMemoryUsage'].forEach(id => {
+          const element = document.getElementById(id);
+          if (element) {
+            element.className = ramUsage > 80 ? 'font-bold text-red-600' : 
+                               ramUsage > 60 ? 'font-bold text-yellow-600' : 'font-bold text-blue-600';
+          }
+        });
+      }, 5000);
+      
+    // Mostrar notificación de bienvenida
+      setTimeout(() => {
+        showInPageNotification('Bienvenido', 'Vigilant WebGuard iniciado exitosamente', 'success');
+      }, 1000);
     };
+    
+    // Función para abrir Grafana Dashboard real
+    function openGrafanaDashboard() {
+      // Mostrar notificación
+      showInPageNotification(
+        'Abriendo Grafana', 
+        'Conectando al dashboard de métricas en tiempo real...', 
+        'info'
+      );
+      
+      // Intentar abrir Grafana en nueva pestaña
+      setTimeout(() => {
+        try {
+          // URL de Grafana con el dashboard específico de WebGuard
+          const grafanaUrl = 'http://localhost:3000/d/webguard-security/webguard-security-dashboard?orgId=1&refresh=5s';
+          const grafanaWindow = window.open(grafanaUrl, '_blank');
+          
+          // Verificar si se pudo abrir
+          if (!grafanaWindow) {
+            throw new Error('Popup bloqueado');
+          }
+          
+          showInPageNotification(
+            'Grafana Dashboard', 
+            'Dashboard abierto en nueva pestaña', 
+            'success'
+          );
+          
+        } catch (error) {
+          // Si falla, mostrar iframe en la misma página
+          showInPageNotification(
+            'Grafana Dashboard', 
+            'Abriendo dashboard integrado...', 
+            'warning'
+          );
+          
+          // Crear o mostrar iframe de Grafana
+          showGrafanaIframe();
+        }
+      }, 1000);
+    }
+    
+    // Función para mostrar Grafana en iframe
+    function showGrafanaIframe() {
+      // Ocultar todas las secciones
+      document.querySelectorAll('.main-tab-content, .section-content').forEach(content => {
+        content.classList.add('hidden');
+      });
+      
+      // Buscar sección existente de Grafana iframe
+      let grafanaSection = document.getElementById('grafana-iframe-section');
+      
+      // Si no existe, crearla
+      if (!grafanaSection) {
+        const main = document.querySelector('main');
+        grafanaSection = document.createElement('section');
+        grafanaSection.id = 'grafana-iframe-section';
+        grafanaSection.className = 'main-tab-content';
+        grafanaSection.innerHTML = `
+          <div class="h-full">
+            <div class="flex items-center justify-between p-4 bg-gradient-to-r from-blue-600 to-blue-800 text-white mb-4 rounded-lg">
+              <div class="flex items-center space-x-3">
+                <i class="fas fa-chart-area text-2xl"></i>
+                <h2 class="text-xl font-bold">Grafana Dashboard - Métricas en Tiempo Real</h2>
+              </div>
+              <div class="flex space-x-2">
+                <button onclick="refreshGrafana()" class="bg-white bg-opacity-20 hover:bg-opacity-30 px-3 py-1 rounded text-sm transition-colors">
+                  <i class="fas fa-sync-alt"></i> Recargar
+                </button>
+                <button onclick="openGrafanaNewTab()" class="bg-white bg-opacity-20 hover:bg-opacity-30 px-3 py-1 rounded text-sm transition-colors">
+                  <i class="fas fa-external-link-alt"></i> Nueva Pestaña
+                </button>
+              </div>
+            </div>
+            <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+              <iframe 
+                id="grafana-iframe"
+                src="http://localhost:3000/d/webguard-security/webguard-security-dashboard?orgId=1&refresh=5s&kiosk" 
+                class="w-full border-0"
+                style="height: calc(100vh - 200px);"
+                title="Grafana Dashboard"
+                onload="onGrafanaLoaded()"
+                onerror="onGrafanaError()"
+              ></iframe>
+            </div>
+            <div id="grafana-error" class="hidden p-4 bg-red-50 border border-red-200 rounded-lg mt-4">
+              <div class="flex items-center space-x-2 text-red-800">
+                <i class="fas fa-exclamation-triangle"></i>
+                <div>
+                  <div class="font-semibold">Error conectando a Grafana</div>
+                  <div class="text-sm mt-1">
+                    Asegúrate de que Grafana esté ejecutándose en localhost:3000<br>
+                    Ejecuta: <code class="bg-red-100 px-2 py-1 rounded">docker-compose -f docker-compose.grafana.yml up -d</code>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+        main.appendChild(grafanaSection);
+      }
+      
+      // Mostrar sección de Grafana
+      grafanaSection.classList.remove('hidden');
+    }
+    
+    // Función para recargar Grafana
+    function refreshGrafana() {
+      const iframe = document.getElementById('grafana-iframe');
+      if (iframe) {
+        iframe.src = iframe.src + '&_t=' + new Date().getTime(); // Agregar timestamp para evitar cache
+        showInPageNotification('Grafana', 'Recargando dashboard...', 'info');
+      }
+    }
+    
+    // Función para abrir Grafana en nueva pestaña
+    function openGrafanaNewTab() {
+      window.open('http://localhost:3000/d/webguard-security/webguard-security-dashboard?orgId=1&refresh=5s', '_blank');
+    }
+    
+    // Función cuando Grafana carga exitosamente
+    function onGrafanaLoaded() {
+      console.log('Grafana dashboard cargado exitosamente');
+      document.getElementById('grafana-error').classList.add('hidden');
+    }
+    
+    // Función cuando hay error cargando Grafana
+    function onGrafanaError() {
+      console.error('Error cargando Grafana dashboard');
+      document.getElementById('grafana-error').classList.remove('hidden');
+      showInPageNotification(
+        'Error Grafana', 
+        'No se pudo conectar al dashboard. Verifica que Grafana esté ejecutándose.', 
+        'error'
+      );
+    }
   </script>
 </body>
 </html>

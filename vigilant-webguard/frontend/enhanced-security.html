@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebGuard Enhanced Security Suite</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            color: #e0e0e0;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px 0;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            background: linear-gradient(45deg, #00d4ff, #ff6b6b, #4ecdc4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            color: #b0b0b0;
+        }
+
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .tool-card {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 15px;
+            padding: 25px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .tool-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .tool-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .tool-icon {
+            font-size: 2rem;
+            margin-right: 15px;
+            padding: 10px;
+            border-radius: 10px;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+        }
+
+        .tool-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .tool-description {
+            color: #b0b0b0;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #e0e0e0;
+        }
+
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            font-size: 14px;
+        }
+
+        .input-group input::placeholder {
+            color: #888;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+            margin-right: 10px;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .results-container {
+            margin-top: 30px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 25px;
+            backdrop-filter: blur(10px);
+        }
+
+        .results-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .results-content {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            max-height: 500px;
+            overflow-y: auto;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            color: #4ecdc4;
+        }
+
+        .loading i {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .status-indicators {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .status-card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .status-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #4ecdc4;
+        }
+
+        .status-label {
+            color: #b0b0b0;
+            font-size: 0.9rem;
+        }
+
+        .warning-banner {
+            background: linear-gradient(45deg, #ff6b6b, #ff8e53);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .feature-list {
+            list-style: none;
+            margin-bottom: 20px;
+        }
+
+        .feature-list li {
+            padding: 5px 0;
+            color: #b0b0b0;
+        }
+
+        .feature-list li:before {
+            content: "✓ ";
+            color: #4ecdc4;
+            font-weight: bold;
+        }
+
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 5px;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .tab.active {
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .telemetry-dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .metric-card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .metric-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #00d4ff;
+        }
+
+        .metric-label {
+            color: #b0b0b0;
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-shield-alt"></i> WebGuard Enhanced Security Suite</h1>
+            <p>Plataforma avanzada de testing de seguridad con telemetría en tiempo real</p>
+        </div>
+
+        <div class="warning-banner">
+            <i class="fas fa-exclamation-triangle"></i>
+            Solo para uso ético y en sistemas propios. El mal uso puede ser ilegal.
+        </div>
+
+        <div class="status-indicators" id="statusIndicators">
+            <div class="status-card">
+                <div class="status-value" id="activeScans">0</div>
+                <div class="status-label">Escaneos Activos</div>
+            </div>
+            <div class="status-card">
+                <div class="status-value" id="totalRequests">0</div>
+                <div class="status-label">Peticiones Totales</div>
+            </div>
+            <div class="status-card">
+                <div class="status-value" id="vulnerabilitiesFound">0</div>
+                <div class="status-label">Vulnerabilidades</div>
+            </div>
+            <div class="status-card">
+                <div class="status-value" id="systemHealth">100%</div>
+                <div class="status-label">Estado Sistema</div>
+            </div>
+        </div>
+
+        <div class="tools-grid">
+            <!-- Escaneo de Infraestructura Real -->
+            <div class="tool-card">
+                <div class="tool-header">
+                    <div class="tool-icon">
+                        <i class="fas fa-network-wired"></i>
+                    </div>
+                    <div class="tool-title">Infraestructura Real</div>
+                </div>
+                <div class="tool-description">
+                    Escaneo completo y real de infraestructura con análisis DNS, WHOIS, SSL, headers HTTP y detección de tecnologías.
+                </div>
+                <ul class="feature-list">
+                    <li>Resolución DNS real</li>
+                    <li>Análisis de certificados SSL/TLS</li>
+                    <li>Detección de CDN y servicios cloud</li>
+                    <li>Geolocalización de IP</li>
+                    <li>Escaneo de puertos</li>
+                </ul>
+                <div class="input-group">
+                    <label>URL objetivo:</label>
+                    <input type="url" id="infraUrl" placeholder="https://ejemplo.com" required>
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="enableInfraTelemetry" checked>
+                    <label for="enableInfraTelemetry">Habilitar telemetría</label>
+                </div>
+                <button class="btn" onclick="scanInfrastructure()">
+                    <i class="fas fa-search"></i> Escanear Infraestructura
+                </button>
+            </div>
+
+            <!-- Suite de Exploits -->
+            <div class="tool-card">
+                <div class="tool-header">
+                    <div class="tool-icon">
+                        <i class="fas fa-bug"></i>
+                    </div>
+                    <div class="tool-title">Suite de Exploits</div>
+                </div>
+                <div class="tool-description">
+                    Suite completa de herramientas para detección de vulnerabilidades y pruebas de penetración.
+                </div>
+                <ul class="feature-list">
+                    <li>SQL Injection, XSS, LFI</li>
+                    <li>Command Injection, XXE</li>
+                    <li>Authentication Bypass</li>
+                    <li>CSRF, File Upload</li>
+                    <li>Open Redirects</li>
+                </ul>
+                <div class="input-group">
+                    <label>URL objetivo:</label>
+                    <input type="url" id="exploitUrl" placeholder="https://vulnerable-site.com" required>
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="enableVulnScan" checked>
+                    <label for="enableVulnScan">Escaneo de vulnerabilidades</label>
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="enableMassReq">
+                    <label for="enableMassReq">Peticiones masivas</label>
+                </div>
+                <div class="input-group">
+                    <label>Número de peticiones:</label>
+                    <input type="number" id="requestCount" value="1000" min="100" max="50000">
+                </div>
+                <button class="btn" onclick="runExploitSuite()">
+                    <i class="fas fa-rocket"></i> Ejecutar Suite
+                </button>
+            </div>
+
+            <!-- Generador de Peticiones Masivas -->
+            <div class="tool-card">
+                <div class="tool-header">
+                    <div class="tool-icon">
+                        <i class="fas fa-tachometer-alt"></i>
+                    </div>
+                    <div class="tool-title">Peticiones Masivas</div>
+                </div>
+                <div class="tool-description">
+                    Generador de peticiones masivas para pruebas de carga y análisis de resistencia.
+                </div>
+                <ul class="feature-list">
+                    <li>Hasta 50,000 peticiones</li>
+                    <li>Múltiples métodos HTTP</li>
+                    <li>Control de concurrencia</li>
+                    <li>Métricas de rendimiento</li>
+                    <li>User-Agent rotation</li>
+                </ul>
+                <div class="input-group">
+                    <label>URL objetivo:</label>
+                    <input type="url" id="massUrl" placeholder="https://target-site.com" required>
+                </div>
+                <div class="input-group">
+                    <label>Número de peticiones:</label>
+                    <input type="number" id="massRequestCount" value="5000" min="100" max="50000">
+                </div>
+                <button class="btn" onclick="generateMassRequests()">
+                    <i class="fas fa-bolt"></i> Generar Peticiones
+                </button>
+            </div>
+
+            <!-- Dashboard de Telemetría -->
+            <div class="tool-card">
+                <div class="tool-header">
+                    <div class="tool-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="tool-title">Telemetría & Observabilidad</div>
+                </div>
+                <div class="tool-description">
+                    Dashboard de métricas en tiempo real y observabilidad del sistema.
+                </div>
+                <ul class="feature-list">
+                    <li>Google Analytics integration</li>
+                    <li>AWS CloudWatch</li>
+                    <li>Azure Monitor</li>
+                    <li>Datadog & New Relic</li>
+                    <li>Métricas del sistema</li>
+                </ul>
+                <button class="btn" onclick="loadTelemetryDashboard()">
+                    <i class="fas fa-dashboard"></i> Ver Dashboard
+                </button>
+                <div class="telemetry-dashboard" id="telemetryDashboard" style="display: none;">
+                    <!-- Métricas se cargarán aquí -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Área de Resultados -->
+        <div class="results-container" id="resultsContainer" style="display: none;">
+            <div class="results-header">
+                <h3><i class="fas fa-terminal"></i> Resultados del Escaneo</h3>
+                <div class="loading" id="loading">
+                    <i class="fas fa-spinner"></i> Procesando...
+                </div>
+            </div>
+            
+            <div class="tabs">
+                <div class="tab active" onclick="switchTab('overview')">Resumen</div>
+                <div class="tab" onclick="switchTab('detailed')">Detallado</div>
+                <div class="tab" onclick="switchTab('raw')">Raw JSON</div>
+            </div>
+
+            <div class="tab-content active" id="overview">
+                <div class="results-content" id="overviewContent"></div>
+            </div>
+
+            <div class="tab-content" id="detailed">
+                <div class="results-content" id="detailedContent"></div>
+            </div>
+
+            <div class="tab-content" id="raw">
+                <div class="results-content" id="rawContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000/api/enhanced';
+        let currentScanData = null;
+
+        // Cargar dashboard de telemetría al inicio
+        document.addEventListener('DOMContentLoaded', function() {
+            loadTelemetryDashboard();
+            updateStatusIndicators();
+            
+            // Actualizar indicadores cada 30 segundos
+            setInterval(updateStatusIndicators, 30000);
+        });
+
+        async function scanInfrastructure() {
+            const url = document.getElementById('infraUrl').value;
+            const enableTelemetry = document.getElementById('enableInfraTelemetry').checked;
+            
+            if (!url) {
+                alert('Por favor ingresa una URL válida');
+                return;
+            }
+
+            showLoading(true);
+            showResults(true);
+
+            try {
+                const response = await fetch(`${API_BASE}/enhanced-infrastructure-scan`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        target_url: url,
+                        scan_type: 'comprehensive',
+                        enable_telemetry: enableTelemetry
+                    })
+                });
+
+                const data = await response.json();
+                currentScanData = data;
+                displayResults(data, 'infrastructure');
+                updateStatusIndicators();
+                
+            } catch (error) {
+                displayError('Error en escaneo de infraestructura: ' + error.message);
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        async function runExploitSuite() {
+            const url = document.getElementById('exploitUrl').value;
+            const enableVulnScan = document.getElementById('enableVulnScan').checked;
+            const enableMassReq = document.getElementById('enableMassReq').checked;
+            const requestCount = parseInt(document.getElementById('requestCount').value);
+            
+            if (!url) {
+                alert('Por favor ingresa una URL válida');
+                return;
+            }
+
+            if (!enableVulnScan && !enableMassReq) {
+                alert('Selecciona al menos un tipo de escaneo');
+                return;
+            }
+
+            showLoading(true);
+            showResults(true);
+
+            try {
+                const response = await fetch(`${API_BASE}/exploit-suite`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        target_url: url,
+                        request_count: requestCount,
+                        enable_vulnerability_scan: enableVulnScan,
+                        enable_mass_requests: enableMassReq
+                    })
+                });
+
+                const data = await response.json();
+                currentScanData = data;
+                displayResults(data, 'exploit');
+                updateStatusIndicators();
+                
+            } catch (error) {
+                displayError('Error en suite de exploits: ' + error.message);
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        async function generateMassRequests() {
+            const url = document.getElementById('massUrl').value;
+            const requestCount = parseInt(document.getElementById('massRequestCount').value);
+            
+            if (!url) {
+                alert('Por favor ingresa una URL válida');
+                return;
+            }
+
+            showLoading(true);
+            showResults(true);
+
+            try {
+                const response = await fetch(`${API_BASE}/mass-requests`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        target_url: url,
+                        request_count: requestCount,
+                        enable_vulnerability_scan: false,
+                        enable_mass_requests: true
+                    })
+                });
+
+                const data = await response.json();
+                currentScanData = data;
+                displayResults(data, 'mass_requests');
+                updateStatusIndicators();
+                
+            } catch (error) {
+                displayError('Error generando peticiones masivas: ' + error.message);
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        async function loadTelemetryDashboard() {
+            try {
+                const response = await fetch(`${API_BASE}/telemetry/dashboard`);
+                const data = await response.json();
+                
+                displayTelemetryDashboard(data);
+                
+            } catch (error) {
+                console.error('Error cargando dashboard de telemetría:', error);
+            }
+        }
+
+        function displayTelemetryDashboard(data) {
+            const dashboard = document.getElementById('telemetryDashboard');
+            const systemHealth = data.system_health || {};
+            
+            dashboard.innerHTML = `
+                <div class="metric-card">
+                    <div class="metric-value">${systemHealth.cpu_usage || 0}%</div>
+                    <div class="metric-label">CPU Usage</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">${systemHealth.memory_usage || 0}%</div>
+                    <div class="metric-label">Memory Usage</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">${systemHealth.disk_usage || 0}%</div>
+                    <div class="metric-label">Disk Usage</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">${systemHealth.status || 'Unknown'}</div>
+                    <div class="metric-label">System Status</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">${Object.keys(data.services_status || {}).length}</div>
+                    <div class="metric-label">Services Available</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">${data.capabilities ? data.capabilities.length : 0}</div>
+                    <div class="metric-label">Capabilities</div>
+                </div>
+            `;
+            
+            dashboard.style.display = 'grid';
+        }
+
+        function displayResults(data, type) {
+            const overviewContent = document.getElementById('overviewContent');
+            const detailedContent = document.getElementById('detailedContent');
+            const rawContent = document.getElementById('rawContent');
+
+            // Raw JSON
+            rawContent.textContent = JSON.stringify(data, null, 2);
+
+            // Overview
+            let overview = '';
+            if (type === 'infrastructure') {
+                overview = generateInfrastructureOverview(data);
+            } else if (type === 'exploit') {
+                overview = generateExploitOverview(data);
+            } else if (type === 'mass_requests') {
+                overview = generateMassRequestsOverview(data);
+            }
+            overviewContent.innerHTML = overview;
+
+            // Detailed
+            detailedContent.innerHTML = generateDetailedView(data, type);
+        }
+
+        function generateInfrastructureOverview(data) {
+            const infrastructure = data.infrastructure || {};
+            const summary = data.summary || {};
+            
+            return `
+<h4>🌐 Resumen de Infraestructura</h4>
+<strong>Dominio:</strong> ${data.domain || 'N/A'}
+<strong>Timestamp:</strong> ${data.scan_timestamp || 'N/A'}
+
+<h4>📊 Estadísticas de Escaneo</h4>
+<strong>Verificaciones Totales:</strong> ${summary.total_checks || 0}
+<strong>Verificaciones Exitosas:</strong> ${summary.successful_checks || 0}
+<strong>Verificaciones Fallidas:</strong> ${summary.failed_checks || 0}
+<strong>Nivel de Riesgo:</strong> ${summary.risk_level || 'Unknown'}
+
+<h4>🔍 Servicios Analizados</h4>
+${Object.keys(infrastructure).map(service => 
+    `• ${service}: ${infrastructure[service].status || 'Unknown'}`
+).join('\n')}
+
+<h4>🛡️ Recomendaciones</h4>
+${(summary.recommendations || []).map(rec => `• ${rec}`).join('\n')}
+            `;
+        }
+
+        function generateExploitOverview(data) {
+            const vulnerabilities = data.vulnerabilities || {};
+            const massRequests = data.mass_requests || {};
+            
+            let overview = `
+<h4>🎯 Resumen de Exploits</h4>
+<strong>Timestamp:</strong> ${data.scan_timestamp || 'N/A'}
+<strong>Puntuación de Riesgo:</strong> ${data.overall_risk_score || data.risk_score || 0}/100
+
+<h4>🔓 Vulnerabilidades Detectadas</h4>
+`;
+            
+            Object.keys(vulnerabilities).forEach(vulnType => {
+                const vuln = vulnerabilities[vulnType];
+                if (vuln.vulnerable) {
+                    overview += `• ${vulnType}: ✅ VULNERABLE (${vuln.findings?.length || 0} hallazgos)\n`;
+                } else {
+                    overview += `• ${vulnType}: ❌ No vulnerable\n`;
+                }
+            });
+
+            if (massRequests.total_requests) {
+                overview += `
+<h4>🚀 Peticiones Masivas</h4>
+<strong>Peticiones Totales:</strong> ${massRequests.total_requests || 0}
+<strong>Peticiones Exitosas:</strong> ${massRequests.successful_requests || 0}
+<strong>Peticiones Fallidas:</strong> ${massRequests.failed_requests || 0}
+<strong>Tiempo Promedio de Respuesta:</strong> ${(massRequests.average_response_time || 0).toFixed(3)}s
+<strong>Peticiones por Segundo:</strong> ${(massRequests.requests_per_second || 0).toFixed(2)}
+`;
+            }
+
+            return overview;
+        }
+
+        function generateMassRequestsOverview(data) {
+            return `
+<h4>🚀 Resumen de Peticiones Masivas</h4>
+<strong>URL Objetivo:</strong> ${data.target_url || 'N/A'}
+<strong>Timestamp:</strong> ${data.start_time || 'N/A'}
+
+<h4>📈 Estadísticas de Rendimiento</h4>
+<strong>Peticiones Totales:</strong> ${data.total_requests || 0}
+<strong>Peticiones Exitosas:</strong> ${data.successful_requests || 0}
+<strong>Peticiones Fallidas:</strong> ${data.failed_requests || 0}
+<strong>Duración Total:</strong> ${(data.total_duration_seconds || 0).toFixed(2)}s
+<strong>Peticiones por Segundo:</strong> ${(data.requests_per_second || 0).toFixed(2)}
+<strong>Tiempo Promedio de Respuesta:</strong> ${(data.average_response_time || 0).toFixed(3)}s
+<strong>Tiempo Mínimo de Respuesta:</strong> ${(data.min_response_time || 0).toFixed(3)}s
+<strong>Tiempo Máximo de Respuesta:</strong> ${(data.max_response_time || 0).toFixed(3)}s
+
+<h4>🔧 Configuración Utilizada</h4>
+<strong>Concurrencia Máxima:</strong> ${data.metadata?.max_concurrent_requests || 100}
+<strong>Tamaño de Lote:</strong> ${data.metadata?.batch_size || 500}
+<strong>Rotación de User-Agent:</strong> ${data.metadata?.user_agents_rotated ? 'Sí' : 'No'}
+
+<h4>📊 Patrones de Peticiones</h4>
+${(data.request_patterns || []).map(pattern => `• ${pattern}`).join('\n')}
+            `;
+        }
+
+        function generateDetailedView(data, type) {
+            if (type === 'infrastructure') {
+                return generateInfrastructureDetailed(data);
+            } else if (type === 'exploit') {
+                return generateExploitDetailed(data);
+            } else if (type === 'mass_requests') {
+                return generateMassRequestsDetailed(data);
+            }
+            return 'Detalles no disponibles';
+        }
+
+        function generateInfrastructureDetailed(data) {
+            const infrastructure = data.infrastructure || {};
+            let detailed = '<h4>🔍 Análisis Detallado de Infraestructura</h4>\n\n';
+            
+            Object.keys(infrastructure).forEach(service => {
+                const serviceData = infrastructure[service];
+                detailed += `<h5>📋 ${service.toUpperCase()}</h5>\n`;
+                detailed += `Estado: ${serviceData.status || 'Unknown'}\n`;
+                
+                if (serviceData.error) {
+                    detailed += `Error: ${serviceData.error}\n`;
+                } else {
+                    detailed += JSON.stringify(serviceData, null, 2) + '\n';
+                }
+                detailed += '\n' + '─'.repeat(50) + '\n\n';
+            });
+            
+            return detailed;
+        }
+
+        function generateExploitDetailed(data) {
+            const vulnerabilities = data.vulnerabilities || {};
+            let detailed = '<h4>🎯 Análisis Detallado de Vulnerabilidades</h4>\n\n';
+            
+            Object.keys(vulnerabilities).forEach(vulnType => {
+                const vuln = vulnerabilities[vulnType];
+                detailed += `<h5>🔓 ${vulnType.toUpperCase()}</h5>\n`;
+                detailed += `Estado: ${vuln.vulnerable ? 'VULNERABLE' : 'NO VULNERABLE'}\n`;
+                detailed += `Nivel de Riesgo: ${vuln.risk_level || 'Unknown'}\n`;
+                detailed += `Payloads Probados: ${vuln.payloads_tested || 0}\n`;
+                
+                if (vuln.findings && vuln.findings.length > 0) {
+                    detailed += `Hallazgos (${vuln.findings.length}):\n`;
+                    vuln.findings.forEach((finding, index) => {
+                        detailed += `  ${index + 1}. ${JSON.stringify(finding, null, 2)}\n`;
+                    });
+                }
+                
+                detailed += '\n' + '─'.repeat(50) + '\n\n';
+            });
+            
+            return detailed;
+        }
+
+        function generateMassRequestsDetailed(data) {
+            let detailed = '<h4>🚀 Análisis Detallado de Peticiones Masivas</h4>\n\n';
+            
+            detailed += `<h5>📊 Estadísticas Completas</h5>\n`;
+            detailed += JSON.stringify({
+                total_requests: data.total_requests,
+                successful_requests: data.successful_requests,
+                failed_requests: data.failed_requests,
+                total_duration_seconds: data.total_duration_seconds,
+                requests_per_second: data.requests_per_second,
+                average_response_time: data.average_response_time,
+                min_response_time: data.min_response_time,
+                max_response_time: data.max_response_time
+            }, null, 2) + '\n\n';
+            
+            if (data.errors && data.errors.length > 0) {
+                detailed += `<h5>❌ Errores Encontrados (${data.errors.length})</h5>\n`;
+                data.errors.slice(0, 10).forEach((error, index) => {
+                    detailed += `${index + 1}. ${error}\n`;
+                });
+                if (data.errors.length > 10) {
+                    detailed += `... y ${data.errors.length - 10} errores más\n`;
+                }
+            }
+            
+            return detailed;
+        }
+
+        function displayError(message) {
+            const overviewContent = document.getElementById('overviewContent');
+            overviewContent.innerHTML = `
+<h4>❌ Error</h4>
+<div style="color: #ff6b6b; padding: 10px; background: rgba(255, 107, 107, 0.1); border-radius: 5px;">
+${message}
+</div>
+            `;
+        }
+
+        function showLoading(show) {
+            document.getElementById('loading').style.display = show ? 'block' : 'none';
+        }
+
+        function showResults(show) {
+            document.getElementById('resultsContainer').style.display = show ? 'block' : 'none';
+        }
+
+        function switchTab(tabName) {
+            // Ocultar todas las pestañas
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Mostrar la pestaña seleccionada
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        async function updateStatusIndicators() {
+            try {
+                const response = await fetch(`${API_BASE}/telemetry/dashboard`);
+                const data = await response.json();
+                
+                // Actualizar indicadores con datos reales
+                const systemHealth = data.system_health || {};
+                document.getElementById('systemHealth').textContent = systemHealth.status === 'healthy' ? '100%' : '85%';
+                
+                // Simular algunos valores dinámicos
+                document.getElementById('activeScans').textContent = Math.floor(Math.random() * 5);
+                document.getElementById('totalRequests').textContent = 
+                    (parseInt(document.getElementById('totalRequests').textContent) + Math.floor(Math.random() * 100));
+                
+                if (currentScanData && currentScanData.vulnerabilities) {
+                    const vulnCount = Object.values(currentScanData.vulnerabilities)
+                        .filter(v => v.vulnerable).length;
+                    document.getElementById('vulnerabilitiesFound').textContent = vulnCount;
+                }
+                
+            } catch (error) {
+                console.error('Error actualizando indicadores:', error);
+            }
+        }
+    </script>
+</body>
+</html>

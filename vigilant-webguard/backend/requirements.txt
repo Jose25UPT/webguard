@@ -21,6 +21,10 @@ reportlab==4.4.2
 # Logging
 loguru==0.7.3
 
+# Métricas y monitoreo
+influxdb-client==1.43.0
+prometheus-client==0.21.1
+
 # Opcional - instalar manualmente si están disponibles
 # wapiti3
 # python-nmap
@@ -34,3 +38,18 @@ python-whois==0.9.5
 dnspython==2.7.0
 psutil==7.0.0
 reportlab==4.4.2
+
+# Nuevas dependencias para servicios mejorados
+ipwhois==1.3.0
+
+# Telemetría y observabilidad (opcional)
+# Descomentar según servicios disponibles
+# boto3==1.35.0  # AWS SDK
+# azure-monitor==1.0.0  # Azure Monitor
+# datadog==0.48.0  # Datadog
+
+# Dependencias adicionales para exploits y escaneo real
+certifi==2024.8.30
+charset-normalizer==3.4.0
+idna==3.10
+urllib3==2.2.3

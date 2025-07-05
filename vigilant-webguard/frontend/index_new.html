@@ -1,0 +1,994 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vigilant WebGuard - Plataforma de Seguridad Web</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    /* Variables y tema moderno */
+    :root {
+      --primary-blue: #1e3a8a;
+      --secondary-blue: #3b82f6;
+      --light-blue: #dbeafe;
+      --accent-blue: #60a5fa;
+      --dark-blue: #1e40af;
+      --cyber-green: #00ff88;
+      --cyber-purple: #8b5cf6;
+      --cyber-red: #ef4444;
+      --cyber-orange: #f97316;
+    }
+    
+    body {
+      background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #b3e5fc 100%);
+      min-height: 100vh;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    
+    /* Header moderno con gradiente */
+    .header-gradient {
+      background: linear-gradient(135deg, var(--primary-blue) 0%, var(--secondary-blue) 50%, var(--accent-blue) 100%);
+      box-shadow: 0 4px 20px rgba(30, 58, 138, 0.3);
+    }
+    
+    /* Navegación horizontal moderna */
+    .nav-tab {
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .nav-tab:hover {
+      background: rgba(255, 255, 255, 0.1);
+      transform: translateY(-2px);
+    }
+    
+    .nav-tab.active {
+      background: rgba(255, 255, 255, 0.2);
+      border-bottom: 3px solid var(--cyber-green);
+    }
+    
+    .nav-tab::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+      transition: left 0.5s;
+    }
+    
+    .nav-tab:hover::before {
+      left: 100%;
+    }
+    
+    /* Cards con efectos modernos */
+    .modern-card {
+      background: rgba(255, 255, 255, 0.95);
+      border: 1px solid rgba(59, 130, 246, 0.2);
+      box-shadow: 0 4px 20px rgba(59, 130, 246, 0.1);
+      transition: all 0.3s ease;
+      backdrop-filter: blur(10px);
+    }
+    
+    .modern-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 30px rgba(59, 130, 246, 0.2);
+      border-color: var(--secondary-blue);
+    }
+    
+    /* Botones con efectos glitch */
+    .cyber-button {
+      background: linear-gradient(135deg, var(--secondary-blue) 0%, var(--accent-blue) 100%);
+      border: none;
+      color: white;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 10px rgba(59, 130, 246, 0.3);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .cyber-button:hover {
+      background: linear-gradient(135deg, var(--dark-blue) 0%, var(--secondary-blue) 100%);
+      box-shadow: 0 4px 20px rgba(59, 130, 246, 0.4);
+      transform: translateY(-2px);
+    }
+    
+    .cyber-button::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      transition: width 0.6s, height 0.6s;
+    }
+    
+    .cyber-button:hover::after {
+      width: 300px;
+      height: 300px;
+    }
+    
+    /* Animaciones */
+    .pulse-glow {
+      animation: pulseGlow 2s infinite;
+    }
+    
+    @keyframes pulseGlow {
+      0%, 100% { 
+        box-shadow: 0 0 0 0 rgba(96, 165, 250, 0.7);
+      }
+      50% { 
+        box-shadow: 0 0 0 10px rgba(96, 165, 250, 0);
+      }
+    }
+    
+    .typing-animation {
+      animation: typing 3s steps(40, end), blink 0.75s step-end infinite;
+      white-space: nowrap;
+      overflow: hidden;
+      border-right: 3px solid var(--secondary-blue);
+    }
+    
+    @keyframes typing {
+      from { width: 0 }
+      to { width: 100% }
+    }
+    
+    @keyframes blink {
+      from, to { border-color: transparent }
+      50% { border-color: var(--secondary-blue) }
+    }
+    
+    /* Estadísticas dinámicas */
+    .stat-counter {
+      font-family: 'Courier New', monospace;
+      background: linear-gradient(45deg, var(--cyber-green), var(--secondary-blue));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: statPulse 2s ease-in-out infinite;
+    }
+    
+    @keyframes statPulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+    
+    /* Grafana dashboard específico */
+    .grafana-panel {
+      background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+      border: 1px solid #3d3d3d;
+      color: #fff;
+    }
+    
+    .metric-card {
+      background: linear-gradient(135deg, var(--secondary-blue) 0%, var(--accent-blue) 100%);
+      transition: all 0.3s ease;
+    }
+    
+    .metric-card:hover {
+      transform: scale(1.05);
+      box-shadow: 0 10px 30px rgba(59, 130, 246, 0.3);
+    }
+    
+    /* Loading spinner cyber */
+    .cyber-spinner {
+      border: 3px solid rgba(96, 165, 250, 0.3);
+      border-top: 3px solid var(--accent-blue);
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      animation: cyberSpin 1s linear infinite;
+    }
+    
+    @keyframes cyberSpin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    /* Terminal effect */
+    .terminal-text {
+      background: #0f172a;
+      color: var(--cyber-green);
+      font-family: 'Courier New', monospace;
+      text-shadow: 0 0 10px var(--cyber-green);
+    }
+    
+    /* Responsividad mejorada */
+    @media (max-width: 768px) {
+      .nav-tab {
+        font-size: 0.875rem;
+        padding: 0.5rem 0.75rem;
+      }
+      
+      .modern-card {
+        margin: 0.5rem;
+      }
+    }
+  </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+  <!-- Header con navegación horizontal -->
+  <header class="header-gradient text-white shadow-2xl">
+    <div class="container mx-auto px-4">
+      <!-- Barra superior con logo y controles -->
+      <div class="flex items-center justify-between py-4">
+        <div class="flex items-center space-x-4">
+          <div class="flex items-center space-x-3">
+            <i class="fas fa-shield-alt text-3xl pulse-glow"></i>
+            <div>
+              <h1 class="text-2xl font-bold">Vigilant WebGuard</h1>
+              <p class="text-sm opacity-80">Plataforma de Seguridad Web Avanzada</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="flex items-center space-x-4">
+          <!-- Estado del sistema -->
+          <div class="flex items-center space-x-2 bg-white bg-opacity-20 rounded-lg px-3 py-2">
+            <div class="w-3 h-3 bg-green-400 rounded-full pulse-glow"></div>
+            <span class="text-sm">Sistema Operativo</span>
+          </div>
+          
+          <!-- Hora actual -->
+          <div class="text-sm opacity-80" id="currentTime">
+            Cargando...
+          </div>
+          
+          <!-- Controles -->
+          <div class="flex space-x-2">
+            <button onclick="toggleFullscreen()" class="p-2 bg-white bg-opacity-20 rounded hover:bg-opacity-30 transition-colors">
+              <i class="fas fa-expand"></i>
+            </button>
+            <button onclick="toggleTheme()" class="p-2 bg-white bg-opacity-20 rounded hover:bg-opacity-30 transition-colors">
+              <i class="fas fa-moon"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Navegación principal -->
+      <nav class="border-t border-white border-opacity-20">
+        <div class="flex space-x-1 py-2">
+          <button onclick="showTab('dashboard')" class="nav-tab active px-6 py-3 rounded-t-lg font-medium flex items-center space-x-2">
+            <i class="fas fa-tachometer-alt"></i>
+            <span>Dashboard</span>
+          </button>
+          <button onclick="showTab('scanner')" class="nav-tab px-6 py-3 rounded-t-lg font-medium flex items-center space-x-2">
+            <i class="fas fa-search"></i>
+            <span>Escáner</span>
+          </button>
+          <button onclick="showTab('grafana')" class="nav-tab px-6 py-3 rounded-t-lg font-medium flex items-center space-x-2">
+            <i class="fas fa-chart-area"></i>
+            <span>Grafana Metrics</span>
+          </button>
+          <button onclick="showTab('attacks')" class="nav-tab px-6 py-3 rounded-t-lg font-medium flex items-center space-x-2">
+            <i class="fas fa-bullseye"></i>
+            <span>Objetivos de Ataque</span>
+          </button>
+          <button onclick="showTab('reports')" class="nav-tab px-6 py-3 rounded-t-lg font-medium flex items-center space-x-2">
+            <i class="fas fa-chart-line"></i>
+            <span>Reportes</span>
+          </button>
+          <button onclick="showTab('tools')" class="nav-tab px-6 py-3 rounded-t-lg font-medium flex items-center space-x-2">
+            <i class="fas fa-tools"></i>
+            <span>Herramientas</span>
+          </button>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Contenido principal -->
+  <main class="container mx-auto px-4 py-6">
+    <!-- Dashboard Principal -->
+    <section id="dashboard" class="tab-content">
+      <div class="mb-6">
+        <h2 class="text-3xl font-bold text-gray-800 mb-2">Centro de Operaciones de Seguridad</h2>
+        <p class="text-gray-600 typing-animation">Monitoreo y análisis de seguridad en tiempo real</p>
+      </div>
+      
+      <!-- Métricas principales -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div class="modern-card p-6 rounded-lg">
+          <div class="flex items-center space-x-3">
+            <i class="fas fa-shield-alt text-green-500 text-2xl"></i>
+            <div>
+              <div class="text-2xl font-bold text-green-500 stat-counter" id="activeDefenses">12</div>
+              <div class="text-sm text-gray-600">Defensas Activas</div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="modern-card p-6 rounded-lg">
+          <div class="flex items-center space-x-3">
+            <i class="fas fa-exclamation-triangle text-red-500 text-2xl"></i>
+            <div>
+              <div class="text-2xl font-bold text-red-500 stat-counter" id="criticalAlerts">3</div>
+              <div class="text-sm text-gray-600">Alertas Críticas</div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="modern-card p-6 rounded-lg">
+          <div class="flex items-center space-x-3">
+            <i class="fas fa-network-wired text-blue-500 text-2xl"></i>
+            <div>
+              <div class="text-2xl font-bold text-blue-500 stat-counter" id="networkTraffic">1.2TB</div>
+              <div class="text-sm text-gray-600">Tráfico Analizado</div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="modern-card p-6 rounded-lg">
+          <div class="flex items-center space-x-3">
+            <i class="fas fa-clock text-yellow-500 text-2xl"></i>
+            <div>
+              <div class="text-2xl font-bold text-yellow-500 stat-counter" id="responseTime">2.3s</div>
+              <div class="text-sm text-gray-600">Tiempo de Respuesta</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Gráficos y actividad reciente -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div class="modern-card p-6 rounded-lg">
+          <h3 class="text-lg font-semibold mb-4">📊 Uso de Recursos del Sistema</h3>
+          <div class="space-y-4">
+            <div>
+              <div class="flex justify-between text-sm mb-1">
+                <span>CPU</span>
+                <span id="cpuUsage">45%</span>
+              </div>
+              <div class="w-full bg-gray-200 rounded-full h-2">
+                <div id="cpuBar" class="bg-blue-500 h-2 rounded-full transition-all duration-500" style="width: 45%"></div>
+              </div>
+            </div>
+            
+            <div>
+              <div class="flex justify-between text-sm mb-1">
+                <span>Memoria</span>
+                <span id="memoryUsage">62%</span>
+              </div>
+              <div class="w-full bg-gray-200 rounded-full h-2">
+                <div id="memoryBar" class="bg-green-500 h-2 rounded-full transition-all duration-500" style="width: 62%"></div>
+              </div>
+            </div>
+            
+            <div>
+              <div class="flex justify-between text-sm mb-1">
+                <span>Disco</span>
+                <span id="diskUsage">38%</span>
+              </div>
+              <div class="w-full bg-gray-200 rounded-full h-2">
+                <div id="diskBar" class="bg-yellow-500 h-2 rounded-full transition-all duration-500" style="width: 38%"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modern-card p-6 rounded-lg">
+          <h3 class="text-lg font-semibold mb-4">🚨 Feed de Actividad en Tiempo Real</h3>
+          <div id="activityFeed" class="terminal-text p-4 rounded-lg h-64 overflow-y-auto text-xs">
+            <!-- El contenido se llenará dinámicamente -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Escáner Web -->
+    <section id="scanner" class="tab-content hidden">
+      <div class="mb-6">
+        <h2 class="text-3xl font-bold text-gray-800 mb-2">Escáner de Seguridad Web</h2>
+        <p class="text-gray-600">Análisis avanzado de vulnerabilidades en tiempo real</p>
+      </div>
+      
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Formulario de escaneo -->
+        <div class="modern-card p-6 rounded-lg">
+          <h3 class="text-lg font-bold mb-4">🎯 Nuevo Escaneo</h3>
+          <div class="space-y-4">
+            <input id="scanTarget" type="url" placeholder="https://ejemplo.com" 
+              class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            <select id="scanEngine" class="w-full p-3 border border-gray-300 rounded-lg">
+              <option value="wapiti">Wapiti</option>
+              <option value="nikto">Nikto</option>
+              <option value="comprehensive">Análisis Completo</option>
+            </select>
+            <button id="startScan" class="w-full cyber-button py-3 rounded-lg font-bold">
+              <i class="fas fa-rocket mr-2"></i>
+              Iniciar Escaneo
+            </button>
+          </div>
+        </div>
+        
+        <!-- Último reporte -->
+        <div class="modern-card p-6 rounded-lg">
+          <h3 class="text-lg font-bold mb-4">📊 Último Reporte</h3>
+          <div id="lastReport" class="space-y-3">
+            <p class="text-gray-500">No hay escaneos recientes</p>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Progreso del escaneo -->
+      <div id="scanProgress" class="mt-6 modern-card p-6 rounded-lg hidden">
+        <h3 class="text-lg font-bold mb-4">Estado del Escaneo</h3>
+        <div id="scanStatus" class="text-sm text-gray-600 mb-2">Preparando escaneo...</div>
+        <div class="w-full bg-gray-200 rounded-full h-3">
+          <div id="progressBar" class="bg-blue-600 h-3 rounded-full transition-all duration-500" style="width: 0%"></div>
+        </div>
+        <div id="scanTargetDisplay" class="text-xs text-gray-500 mt-2"></div>
+      </div>
+    </section>
+
+    <!-- Grafana Metrics -->
+    <section id="grafana" class="tab-content hidden">
+      <div class="mb-6">
+        <h2 class="text-3xl font-bold text-gray-800 mb-2">📊 Grafana Metrics Dashboard</h2>
+        <p class="text-gray-600">Sistema de métricas y monitoreo avanzado integrado</p>
+      </div>
+      
+      <!-- Métricas principales de Grafana -->
+      <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-6">
+        <div class="metric-card p-6 rounded-lg shadow-lg text-white">
+          <div class="flex items-center justify-between">
+            <div>
+              <div class="text-3xl font-bold" id="grafana-requests">1,234</div>
+              <div class="text-blue-100 text-sm">Requests/min</div>
+            </div>
+            <i class="fas fa-chart-line text-4xl text-blue-200"></i>
+          </div>
+          <div class="mt-3">
+            <div class="text-xs text-blue-100">↗️ +15% desde ayer</div>
+          </div>
+        </div>
+        
+        <div class="bg-gradient-to-br from-green-500 to-green-700 p-6 rounded-lg shadow-lg text-white">
+          <div class="flex items-center justify-between">
+            <div>
+              <div class="text-3xl font-bold" id="grafana-uptime">99.9%</div>
+              <div class="text-green-100 text-sm">Uptime</div>
+            </div>
+            <i class="fas fa-heartbeat text-4xl text-green-200"></i>
+          </div>
+          <div class="mt-3">
+            <div class="text-xs text-green-100">✅ 720 horas activo</div>
+          </div>
+        </div>
+        
+        <div class="bg-gradient-to-br from-orange-500 to-orange-700 p-6 rounded-lg shadow-lg text-white">
+          <div class="flex items-center justify-between">
+            <div>
+              <div class="text-3xl font-bold" id="grafana-alerts">12</div>
+              <div class="text-orange-100 text-sm">Alertas Activas</div>
+            </div>
+            <i class="fas fa-exclamation-triangle text-4xl text-orange-200"></i>
+          </div>
+          <div class="mt-3">
+            <div class="text-xs text-orange-100">⚠️ 3 críticas</div>
+          </div>
+        </div>
+        
+        <div class="bg-gradient-to-br from-purple-500 to-purple-700 p-6 rounded-lg shadow-lg text-white">
+          <div class="flex items-center justify-between">
+            <div>
+              <div class="text-3xl font-bold" id="grafana-cpu">45%</div>
+              <div class="text-purple-100 text-sm">CPU Usage</div>
+            </div>
+            <i class="fas fa-microchip text-4xl text-purple-200"></i>
+          </div>
+          <div class="mt-3">
+            <div class="text-xs text-purple-100">💻 8 cores activos</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Gráficos de Grafana -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="modern-card p-6 rounded-lg">
+          <h3 class="text-lg font-bold mb-4">🌐 Tráfico de Red</h3>
+          <div class="h-64">
+            <canvas id="networkChart"></canvas>
+          </div>
+        </div>
+        
+        <div class="modern-card p-6 rounded-lg">
+          <h3 class="text-lg font-bold mb-4">⚡ Recursos del Sistema</h3>
+          <div class="h-64">
+            <canvas id="systemChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Objetivos de Ataque -->
+    <section id="attacks" class="tab-content hidden">
+      <div class="mb-6">
+        <h2 class="text-3xl font-bold text-gray-800 mb-2">🎯 Objetivos de Ataque</h2>
+        <p class="text-gray-600">Centro de operaciones para testing de penetración</p>
+      </div>
+      
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2">
+          <!-- Configurar objetivo -->
+          <div class="modern-card p-6 rounded-lg border-l-4 border-red-500 mb-6">
+            <h3 class="text-lg font-bold mb-4 text-red-700">🎯 Configurar Objetivo</h3>
+            <div class="space-y-4">
+              <input id="attackTarget" type="url" placeholder="https://objetivo.com" 
+                class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500">
+              <div class="grid grid-cols-2 gap-4">
+                <select id="attackType" class="w-full p-3 border border-gray-300 rounded-lg">
+                  <option value="ddos">DDoS Testing</option>
+                  <option value="vuln">Vulnerability Scan</option>
+                  <option value="pentest">Penetration Test</option>
+                </select>
+                <select id="attackIntensity" class="w-full p-3 border border-gray-300 rounded-lg">
+                  <option value="low">🟡 Baja</option>
+                  <option value="medium">🟠 Media</option>
+                  <option value="high">🔴 Alta</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Centro de comando -->
+          <div class="bg-gradient-to-r from-red-600 to-red-800 p-6 rounded-lg shadow-lg text-white">
+            <div class="flex items-center justify-between">
+              <div>
+                <h3 class="text-xl font-bold mb-2">🚀 Centro de Comando</h3>
+                <p class="text-red-100">Ejecutar operaciones de testing autorizadas</p>
+              </div>
+              <div class="space-x-3">
+                <button onclick="launchAttack()" class="bg-white text-red-600 px-6 py-3 rounded-lg font-bold hover:bg-gray-100 transition-all">
+                  🔥 EJECUTAR
+                </button>
+                <button onclick="stopAttack()" class="bg-red-500 text-white px-4 py-3 rounded-lg font-bold hover:bg-red-400 transition-all">
+                  ⛔ DETENER
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Panel de estado -->
+        <div class="space-y-4">
+          <div class="modern-card p-4 rounded-lg">
+            <h4 class="font-bold mb-3">💻 Estado del Sistema</h4>
+            <div class="space-y-2 text-sm">
+              <div class="flex justify-between">
+                <span>CPU:</span>
+                <span class="font-bold text-green-600">12%</span>
+              </div>
+              <div class="flex justify-between">
+                <span>RAM:</span>
+                <span class="font-bold text-blue-600">45%</span>
+              </div>
+              <div class="flex justify-between">
+                <span>Red:</span>
+                <span class="font-bold text-green-600">Estable</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Reportes -->
+    <section id="reports" class="tab-content hidden">
+      <div class="mb-6">
+        <h2 class="text-3xl font-bold text-gray-800 mb-2">📊 Reportes de Seguridad</h2>
+        <p class="text-gray-600">Análisis histórico y tendencias de seguridad</p>
+      </div>
+      
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="modern-card p-6 rounded-lg">
+          <div class="flex items-center space-x-3 mb-4">
+            <i class="fas fa-calendar-week text-blue-600 text-2xl"></i>
+            <h3 class="font-semibold text-lg">Reporte Semanal</h3>
+          </div>
+          <p class="text-gray-600 mb-4">Resumen de la última semana</p>
+          <button class="w-full cyber-button py-2 rounded-lg font-medium">
+            Generar Reporte
+          </button>
+        </div>
+        
+        <div class="modern-card p-6 rounded-lg">
+          <div class="flex items-center space-x-3 mb-4">
+            <i class="fas fa-calendar-alt text-green-600 text-2xl"></i>
+            <h3 class="font-semibold text-lg">Reporte Mensual</h3>
+          </div>
+          <p class="text-gray-600 mb-4">Análisis completo del mes</p>
+          <button class="w-full bg-green-600 text-white py-2 rounded-lg font-medium hover:bg-green-700">
+            Generar Reporte
+          </button>
+        </div>
+        
+        <div class="modern-card p-6 rounded-lg">
+          <div class="flex items-center space-x-3 mb-4">
+            <i class="fas fa-chart-bar text-purple-600 text-2xl"></i>
+            <h3 class="font-semibold text-lg">Reporte Personalizado</h3>
+          </div>
+          <p class="text-gray-600 mb-4">Configurar fechas específicas</p>
+          <button class="w-full bg-purple-600 text-white py-2 rounded-lg font-medium hover:bg-purple-700">
+            Configurar
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Herramientas -->
+    <section id="tools" class="tab-content hidden">
+      <div class="mb-6">
+        <h2 class="text-3xl font-bold text-gray-800 mb-2">🛠️ Herramientas Avanzadas</h2>
+        <p class="text-gray-600">Suite de herramientas especializadas de seguridad</p>
+      </div>
+      
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="modern-card p-6 rounded-lg">
+          <div class="flex items-center space-x-3 mb-4">
+            <i class="fas fa-shield-alt text-blue-600 text-3xl"></i>
+            <div>
+              <h3 class="font-bold text-lg">Security Suite</h3>
+              <p class="text-gray-600 text-sm">Herramientas avanzadas de exploits</p>
+            </div>
+          </div>
+          <button onclick="openSecuritySuite()" class="w-full bg-gradient-to-r from-blue-500 to-cyan-500 text-white py-3 rounded-lg font-bold hover:from-blue-600 hover:to-cyan-600">
+            🛡️ Abrir Security Suite
+          </button>
+        </div>
+        
+        <div class="modern-card p-6 rounded-lg">
+          <div class="flex items-center space-x-3 mb-4">
+            <i class="fas fa-bomb text-red-600 text-3xl"></i>
+            <div>
+              <h3 class="font-bold text-lg">DDoS & Ataques</h3>
+              <p class="text-gray-600 text-sm">Herramientas de testing de estrés</p>
+            </div>
+          </div>
+          <button onclick="openDDoSTools()" class="w-full bg-gradient-to-r from-red-500 to-pink-500 text-white py-3 rounded-lg font-bold hover:from-red-600 hover:to-pink-600">
+            💥 Abrir DDoS Tools
+          </button>
+        </div>
+        
+        <div class="modern-card p-6 rounded-lg">
+          <div class="flex items-center space-x-3 mb-4">
+            <i class="fas fa-cogs text-green-600 text-3xl"></i>
+            <div>
+              <h3 class="font-bold text-lg">Configuración</h3>
+              <p class="text-gray-600 text-sm">Gestión de API keys y configuración</p>
+            </div>
+          </div>
+          <button onclick="openConfiguration()" class="w-full bg-gradient-to-r from-green-500 to-teal-500 text-white py-3 rounded-lg font-bold hover:from-green-600 hover:to-teal-600">
+            ⚙️ Abrir Configuración
+          </button>
+        </div>
+        
+        <div class="modern-card p-6 rounded-lg">
+          <div class="flex items-center space-x-3 mb-4">
+            <i class="fas fa-brain text-indigo-600 text-3xl"></i>
+            <div>
+              <h3 class="font-bold text-lg">AI Assistant</h3>
+              <p class="text-gray-600 text-sm">Asistente inteligente de seguridad</p>
+            </div>
+          </div>
+          <button onclick="showAIRecommendations()" class="w-full bg-gradient-to-r from-indigo-500 to-purple-500 text-white py-3 rounded-lg font-bold hover:from-indigo-600 hover:to-purple-600">
+            🤖 Consultar AI
+          </button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    // Variables globales
+    let currentTab = 'dashboard';
+    let updateInterval;
+    
+    // Función para cambiar tabs
+    function showTab(tabName) {
+      // Ocultar todos los contenidos
+      document.querySelectorAll('.tab-content').forEach(content => {
+        content.classList.add('hidden');
+      });
+      
+      // Quitar clase active de todas las tabs
+      document.querySelectorAll('.nav-tab').forEach(tab => {
+        tab.classList.remove('active');
+      });
+      
+      // Mostrar contenido seleccionado
+      document.getElementById(tabName).classList.remove('hidden');
+      
+      // Activar tab seleccionada
+      event.target.classList.add('active');
+      
+      currentTab = tabName;
+      
+      // Inicializar contenido específico de la tab
+      initializeTab(tabName);
+    }
+    
+    // Inicializar contenido específico de cada tab
+    function initializeTab(tabName) {
+      switch(tabName) {
+        case 'grafana':
+          initializeGrafanaCharts();
+          break;
+        case 'scanner':
+          initializeScanner();
+          break;
+        case 'attacks':
+          initializeAttacks();
+          break;
+      }
+    }
+    
+    // Inicializar gráficos de Grafana
+    function initializeGrafanaCharts() {
+      // Gráfico de red
+      const networkCtx = document.getElementById('networkChart');
+      if (networkCtx) {
+        new Chart(networkCtx.getContext('2d'), {
+          type: 'line',
+          data: {
+            labels: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00'],
+            datasets: [{
+              label: 'Entrada (MB/s)',
+              data: [125, 132, 145, 138, 142, 155],
+              borderColor: '#3b82f6',
+              tension: 0.4
+            }, {
+              label: 'Salida (MB/s)',
+              data: [89, 95, 102, 98, 105, 112],
+              borderColor: '#10b981',
+              tension: 0.4
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false
+          }
+        });
+      }
+      
+      // Gráfico de sistema
+      const systemCtx = document.getElementById('systemChart');
+      if (systemCtx) {
+        new Chart(systemCtx.getContext('2d'), {
+          type: 'doughnut',
+          data: {
+            labels: ['CPU', 'Memoria', 'Disco'],
+            datasets: [{
+              data: [45, 72, 38],
+              backgroundColor: ['#ef4444', '#3b82f6', '#f59e0b']
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false
+          }
+        });
+      }
+    }
+    
+    // Inicializar escáner
+    function initializeScanner() {
+      const startButton = document.getElementById('startScan');
+      if (startButton) {
+        startButton.onclick = async () => {
+          const target = document.getElementById('scanTarget').value;
+          if (!target) {
+            showNotification('Error', 'Por favor ingresa una URL válida', 'error');
+            return;
+          }
+          
+          // Mostrar progreso
+          const progressSection = document.getElementById('scanProgress');
+          const progressBar = document.getElementById('progressBar');
+          const scanStatus = document.getElementById('scanStatus');
+          
+          progressSection.classList.remove('hidden');
+          
+          // Simular progreso
+          let progress = 0;
+          const progressInterval = setInterval(() => {
+            progress += Math.random() * 15;
+            if (progress > 100) progress = 100;
+            
+            progressBar.style.width = progress + '%';
+            scanStatus.textContent = progress < 50 ? 'Analizando...' : 'Procesando resultados...';
+            
+            if (progress >= 100) {
+              clearInterval(progressInterval);
+              scanStatus.textContent = '✅ Escaneo completado';
+              showNotification('Completado', 'Escaneo finalizado exitosamente', 'success');
+            }
+          }, 500);
+        };
+      }
+    }
+    
+    // Inicializar ataques
+    function initializeAttacks() {
+      // Configuraciones de ataque
+    }
+    
+    // Función para mostrar notificaciones
+    function showNotification(title, message, type = 'info') {
+      const notification = document.createElement('div');
+      notification.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg max-w-sm transform transition-all duration-300 ${
+        type === 'success' ? 'bg-green-500' : 
+        type === 'error' ? 'bg-red-500' : 
+        type === 'warning' ? 'bg-yellow-500' : 'bg-blue-500'
+      } text-white`;
+      
+      notification.innerHTML = `
+        <div class="flex items-start">
+          <div class="flex-shrink-0">
+            <div class="text-lg">${
+              type === 'success' ? '✅' : 
+              type === 'error' ? '❌' : 
+              type === 'warning' ? '⚠️' : 'ℹ️'
+            }</div>
+          </div>
+          <div class="ml-3 flex-1">
+            <div class="font-semibold">${title}</div>
+            <div class="text-sm mt-1">${message}</div>
+          </div>
+          <button onclick="this.parentElement.parentElement.remove()" class="ml-3 text-white hover:text-gray-200">
+            ×
+          </button>
+        </div>
+      `;
+      
+      document.body.appendChild(notification);
+      
+      setTimeout(() => {
+        if (notification.parentElement) {
+          notification.style.transform = 'translateX(100%)';
+          setTimeout(() => notification.remove(), 300);
+        }
+      }, 5000);
+    }
+    
+    // Funciones de herramientas
+    function openSecuritySuite() {
+      showNotification('Security Suite', 'Abriendo herramientas avanzadas...', 'info');
+      setTimeout(() => {
+        window.open('./enhanced-security.html', '_blank');
+      }, 1000);
+    }
+    
+    function openDDoSTools() {
+      if (confirm('⚠️ ADVERTENCIA: Estas herramientas son para testing autorizado únicamente. ¿Continuar?')) {
+        showNotification('DDoS Tools', 'Abriendo herramientas de testing...', 'warning');
+        setTimeout(() => {
+          window.open('./ddos-tools.html', '_blank');
+        }, 1000);
+      }
+    }
+    
+    function openConfiguration() {
+      showNotification('Configuración', 'Abriendo panel de configuración...', 'info');
+      setTimeout(() => {
+        window.open('./config.html', '_blank');
+      }, 1000);
+    }
+    
+    function showAIRecommendations() {
+      const recommendations = [
+        '🛡️ Implementar headers de seguridad adicionales',
+        '🔒 Activar HTTPS estricto en todo el sitio',
+        '🔍 Configurar monitoreo de integridad',
+        '⚡ Optimizar configuración de firewall'
+      ];
+      
+      const randomRec = recommendations[Math.floor(Math.random() * recommendations.length)];
+      showNotification('Recomendación AI', randomRec, 'info');
+    }
+    
+    // Funciones de ataque
+    function launchAttack() {
+      const target = document.getElementById('attackTarget').value;
+      if (!target) {
+        showNotification('Error', 'Por favor ingresa una URL objetivo', 'warning');
+        return;
+      }
+      
+      showNotification('Ataque Iniciado', `Ejecutando testing en ${target}`, 'warning');
+    }
+    
+    function stopAttack() {
+      showNotification('Operación Detenida', 'Todas las operaciones han sido canceladas', 'info');
+    }
+    
+    // Funciones de utilidad
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen();
+      } else {
+        document.exitFullscreen();
+      }
+    }
+    
+    function toggleTheme() {
+      document.body.classList.toggle('dark-theme');
+    }
+    
+    // Actualizar hora
+    function updateTime() {
+      const now = new Date();
+      document.getElementById('currentTime').textContent = now.toLocaleTimeString();
+    }
+    
+    // Actualizar métricas del sistema
+    function updateSystemMetrics() {
+      // Actualizar CPU
+      const cpuUsage = Math.floor(Math.random() * 30) + 40;
+      document.getElementById('cpuUsage').textContent = cpuUsage + '%';
+      document.getElementById('cpuBar').style.width = cpuUsage + '%';
+      
+      // Actualizar memoria
+      const memoryUsage = Math.floor(Math.random() * 25) + 50;
+      document.getElementById('memoryUsage').textContent = memoryUsage + '%';
+      document.getElementById('memoryBar').style.width = memoryUsage + '%';
+      
+      // Actualizar disco
+      const diskUsage = Math.floor(Math.random() * 20) + 30;
+      document.getElementById('diskUsage').textContent = diskUsage + '%';
+      document.getElementById('diskBar').style.width = diskUsage + '%';
+      
+      // Actualizar feed de actividad
+      updateActivityFeed();
+    }
+    
+    // Actualizar feed de actividad
+    function updateActivityFeed() {
+      const feed = document.getElementById('activityFeed');
+      const timestamp = new Date().toLocaleTimeString();
+      const activities = [
+        'Security scan completed',
+        'Network traffic analyzed',
+        'Firewall rules updated',
+        'Vulnerability detected',
+        'System health check passed'
+      ];
+      
+      const activity = activities[Math.floor(Math.random() * activities.length)];
+      const entry = document.createElement('div');
+      entry.textContent = `[${timestamp}] ${activity}`;
+      
+      feed.insertBefore(entry, feed.firstChild);
+      
+      // Mantener solo las últimas 20 entradas
+      while (feed.children.length > 20) {
+        feed.removeChild(feed.lastChild);
+      }
+    }
+    
+    // Inicialización
+    window.onload = () => {
+      updateTime();
+      updateSystemMetrics();
+      
+      // Actualizar cada 5 segundos
+      setInterval(updateTime, 1000);
+      setInterval(updateSystemMetrics, 5000);
+      
+      // Mostrar notificación de bienvenida
+      setTimeout(() => {
+        showNotification('Bienvenido', 'Vigilant WebGuard iniciado exitosamente', 'success');
+      }, 1000);
+    };
+  </script>
+</body>
+</html>

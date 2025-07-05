@@ -1,13 +1,16 @@
 from fastapi import APIRouter, HTTPException, BackgroundTasks
-from fastapi.responses import JSONResponse, FileResponse
-from app.services.clean_scanner_service import clean_scanner
-from app.utils.simple_pdf_generator import simple_pdf_generator
+from fastapi.responses import FileResponse, JSONResponse
+from pydantic import BaseModel
 import json
 import os
+import asyncio
+import time
 import tempfile
 from pathlib import Path
 from loguru import logger
-
+from ..services.wapiti_service import wapiti_service
+from ..services.pdf_generator import pdf_generator
+from ..services.metrics_service import metrics_service
 router = APIRouter()
 
 # Variable global para almacenar el último resultado
@@ -25,8 +28,33 @@ async def clean_scan_endpoint(request_data: dict):
         
         logger.info(f"🚀 Iniciando escaneo limpio para: {target_url}")
         
+        # Registrar inicio de escaneo
+        metrics_service.write_scan_metric("started", "wapiti", target_url=target_url)
+        
         # Ejecutar escaneo
-        result = await clean_scanner.scan_url(target_url)
+        start_time = time.time()
+        result = await wapiti_service.scan_url(target_url)
+        scan_duration = time.time() - start_time
+        
+        # Registrar métricas de vulnerabilidades encontradas
+        if 'vulnerabilities' in result:
+            for category, vulns in result['vulnerabilities'].items():
+                if isinstance(vulns, list):
+                    for vuln in vulns:
+                        severity = "high" if vuln.get('level', 1) >= 3 else "medium" if vuln.get('level', 1) == 2 else "low"
+                        metrics_service.write_vulnerability_metric(
+                            severity=severity,
+                            category=category,
+                            target_url=target_url
+                        )
+        
+        # Registrar finalización de escaneo
+        metrics_service.write_scan_metric(
+            "completed", 
+            "wapiti", 
+            duration=scan_duration,
+            target_url=target_url
+        )
         
         # Guardar resultado en memoria temporal
         last_scan_result = result
@@ -75,7 +103,7 @@ async def download_clean_pdf():
         
         try:
             # Generar PDF usando el generador simple que funciona
-            pdf_path = simple_pdf_generator.generate_comprehensive_report(last_scan_result)
+            pdf_path = pdf_generator.generate_comprehensive_report(last_scan_result)
             
             if not os.path.exists(pdf_path):
                 raise HTTPException(status_code=500, detail="No se pudo generar el PDF")
@@ -126,7 +154,7 @@ async def cleanup_after_download(pdf_path: str, temp_json_path: str):
         last_scan_result = None
         
         # Limpiar todos los archivos temporales del scanner
-        clean_scanner.cleanup_all_temp()
+        wapiti_service.cleanup_all_temp()
         
         # Limpiar directorio de reportes
         reports_dir = Path("results/reports")
@@ -152,7 +180,7 @@ async def reset_scanner():
         last_scan_result = None
         
         # Limpiar archivos temporales
-        clean_scanner.cleanup_all_temp()
+        wapiti_service.cleanup_all_temp()
         
         # Limpiar directorios de resultados
         directories_to_clean = [
